@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Petromin AR Scanner</title>
+  <title>Petromin Interactive AR Experience</title>
   
   <!-- Stable A-Frame & MindAR CDN pairing -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -18,7 +18,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Loading Screen using Petromin's corporate color palette */
+    /* Loading Screen */
     #loading {
       position: fixed;
       top: 0;
@@ -70,7 +70,7 @@
       border: 1px solid #FF5252;
     }
 
-    /* Scanner Target Bounds HUD */
+    /* Scanner HUD Overlay */
     #scan-guide {
       position: absolute;
       top: 45%;
@@ -93,7 +93,6 @@
       border-color: #FFFFFF;
       border-style: solid;
     }
-    /* Corner HUD Borders */
     #scan-guide::before { top: -3px; left: -3px; border-width: 5px 0 0 5px; border-top-left-radius: 18px; }
     #scan-guide::after { top: -3px; right: -3px; border-width: 5px 5px 0 0; border-top-right-radius: 18px; }
     #scan-guide span::before { bottom: -3px; left: -3px; border-width: 0 0 5px 5px; border-bottom-left-radius: 18px; }
@@ -111,7 +110,27 @@
       letter-spacing: 1px;
     }
 
-    /* Brand Slide-up Modal Drawer */
+    /* Interaction Hint banner at the top of the AR viewport */
+    #interaction-hint {
+      display: none;
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: #FFF;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 50;
+      border: 1px solid #FF6D00;
+      pointer-events: none;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+
+    /* Info Slide-up Drawer */
     #info-card {
       position: fixed;
       bottom: -100%;
@@ -253,26 +272,90 @@
       box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
     }
   </style>
+  
+  <script>
+    // Custom A-Frame component to capture user interactions on the 3D car
+    AFRAME.registerComponent('car-interactive', {
+      init: function () {
+        const el = this.el;
+        
+        // Listen to mobile touch / mouseclick triggers
+        el.addEventListener('click', () => {
+          // Play engine sound
+          playEngineSound();
+          
+          // Trigger slide up UI
+          document.getElementById('info-card').classList.add('active');
+          document.getElementById('interaction-hint').style.display = 'none';
+        });
+
+        // Visual hover / touch feedback inside virtual space
+        el.addEventListener('mouseenter', () => {
+          el.setAttribute('scale', '1.1 1.1 1.1');
+        });
+
+        el.addEventListener('mouseleave', () => {
+          el.setAttribute('scale', '1 1 1');
+        });
+      }
+    });
+
+    // Web Audio API engine sound generator
+    function playEngineSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        
+        // Oscillator 1 (Low Rumble)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(45, ctx.currentTime);
+        osc1.frequency.exponentialRampToValueAtTime(140, ctx.currentTime + 0.3);
+        osc1.frequency.exponentialRampToValueAtTime(90, ctx.currentTime + 0.8);
+        
+        // Lowpass Filter for exhaust feel
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(250, ctx.currentTime);
+        
+        osc1.connect(gain1);
+        gain1.connect(filter);
+        filter.connect(ctx.destination);
+        
+        gain1.gain.setValueAtTime(0.4, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+        
+        osc1.start();
+        osc1.stop(ctx.currentTime + 0.8);
+      } catch (e) {
+        console.warn("Audio Context could not start:", e);
+      }
+    }
+  </script>
 </head>
 <body>
 
-  <!-- Loading Animation Overlay -->
+  <!-- Loading Screen -->
   <div id="loading">
     <div class="spinner"></div>
     <h3 style="margin:0; letter-spacing: 1px;">PETROMIN AR</h3>
     <p style="font-size:12px; opacity:0.8; margin-top:5px; font-weight: 500;">Accessing Camera Feed...</p>
   </div>
 
-  <!-- On-Screen Console for Diagnostics -->
+  <!-- Diagnostics System Panel -->
   <div id="error-console"></div>
 
-  <!-- HUD Overlay -->
+  <!-- Interaction HUD Header -->
+  <div id="interaction-hint">🌟 TAP THE 3D CAR TO INSPECT</div>
+
+  <!-- Scanning Guide HUD Frame -->
   <div id="scan-guide">
     <span></span>
     <div id="scan-text">ALIGN WITH PETROMIN LOGO</div>
   </div>
 
-  <!-- Corporate Profile Sheet -->
+  <!-- Info Modal Sheet -->
   <div id="info-card">
     <div class="card-handle"></div>
     <div class="card-content">
@@ -318,18 +401,76 @@
     </div>
   </div>
 
-  <!-- AR Scene -->
+  <!-- AR Scene with Interactive Cursor Configuration -->
   <a-scene 
     id="ar-scene"
     color-space="sRGB" 
     renderer="colorManagement: true, physicallyCorrectLights" 
     vr-mode-ui="enabled: false" 
-    device-orientation-permission-ui="enabled: false">
+    device-orientation-permission-ui="enabled: false"
+    raycaster="objects: .clickable">
     
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <!-- We configure the cursor inside our camera rig so mobile screen-taps can cast intersecting rays onto the 3D car model -->
+    <a-camera position="0 0 0" look-controls="enabled: false">
+      <a-cursor 
+        id="cursor"
+        animation__click="property: scale; startEvents: click; easing: easeInCubic; durability: 150; from: 0.1 0.1 0.1; to: 1 1 1"
+        animation__fusing="property: scale; startEvents: fusing; easing: easeInCubic; durability: 1500; from: 1 1 1; to: 0.1 0.1 0.1"
+        event-set__mouseenter="_event: mouseenter; color: #FF6D00"
+        event-set__mouseleave="_event: mouseleave; color: black"
+        raycaster="objects: .clickable"
+        material="color: #FFFFFF; shader: flat; opacity: 0.5"
+        position="0 0 -1"
+        geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.015">
+      </a-cursor>
+    </a-camera>
 
-    <!-- Index 0 corresponds to the compiled logo marker inside targets.mind -->
-    <a-entity id="ar-target" mindar-image-target="targetIndex: 0"></a-entity>
+    <!-- AR Targets Entity. Index 0 references targets.mind -->
+    <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
+      
+      <!-- Interactive 3D Composite Car Model Group -->
+      <a-entity 
+        id="car-model-group" 
+        class="clickable" 
+        car-interactive 
+        position="0 0 0.1" 
+        scale="0.8 0.8 0.8"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear">
+        
+        <!-- Car Main Body -->
+        <a-box position="0 0.1 0" width="0.7" height="0.15" depth="0.35" material="color: #D32F2F; metalness: 0.7; roughness: 0.2;"></a-box>
+        
+        <!-- Car Cabin Roof -->
+        <a-box position="-0.05 0.22 0" width="0.35" height="0.12" depth="0.28" material="color: #1a1a1a; metalness: 0.9; roughness: 0.1;"></a-box>
+        
+        <!-- Front Spoiler Wing -->
+        <a-box position="0.36 0.06 0" width="0.08" height="0.03" depth="0.36" material="color: #FF6D00;"></a-box>
+        
+        <!-- Underglow Neon Light -->
+        <a-plane position="0 0.01 0" rotation="-90 0 0" width="0.6" height="0.3" material="color: #FF6D00; shader: flat; opacity: 0.6"></a-plane>
+
+        <!-- Front Left Wheel -->
+        <a-cylinder position="0.2 0.05 0.18" rotation="90 0 0" radius="0.08" height="0.04" material="color: #111; roughness: 0.8;"></a-cylinder>
+        <a-cylinder position="0.2 0.05 0.185" rotation="90 0 0" radius="0.04" height="0.042" material="color: #DDD; metalness: 0.8;"></a-cylinder>
+
+        <!-- Front Right Wheel -->
+        <a-cylinder position="0.2 0.05 -0.18" rotation="90 0 0" radius="0.08" height="0.04" material="color: #111; roughness: 0.8;"></a-cylinder>
+        <a-cylinder position="0.2 0.05 -0.185" rotation="90 0 0" radius="0.04" height="0.042" material="color: #DDD; metalness: 0.8;"></a-cylinder>
+
+        <!-- Rear Left Wheel -->
+        <a-cylinder position="-0.2 0.05 0.18" rotation="90 0 0" radius="0.08" height="0.04" material="color: #111; roughness: 0.8;"></a-cylinder>
+        <a-cylinder position="-0.2 0.05 0.185" rotation="90 0 0" radius="0.04" height="0.042" material="color: #DDD; metalness: 0.8;"></a-cylinder>
+
+        <!-- Rear Right Wheel -->
+        <a-cylinder position="-0.2 0.05 -0.18" rotation="90 0 0" radius="0.08" height="0.04" material="color: #111; roughness: 0.8;"></a-cylinder>
+        <a-cylinder position="-0.2 0.05 -0.185" rotation="90 0 0" radius="0.04" height="0.042" material="color: #DDD; metalness: 0.8;"></a-cylinder>
+
+        <!-- Headlights -->
+        <a-box position="0.35 0.12 0.1" width="0.02" height="0.04" depth="0.06" material="color: #FFFF99; shader: flat;"></a-box>
+        <a-box position="0.35 0.12 -0.1" width="0.02" height="0.04" depth="0.06" material="color: #FFFF99; shader: flat;"></a-box>
+      </a-entity>
+
+    </a-entity>
   </scene>
 
   <script>
@@ -339,25 +480,24 @@
     const targetEntity = document.getElementById('ar-target');
     const sceneEl = document.getElementById('ar-scene');
     const errConsole = document.getElementById('error-console');
+    const interactionHint = document.getElementById('interaction-hint');
 
-    // Display error stack if file compilation fails
+    // System Logging Helper
     function showRuntimeError(message) {
       errConsole.style.display = 'block';
       errConsole.innerHTML += '<strong>[System Check]:</strong> ' + message + '<br>';
     }
 
-    // Capture global page failures
+    // Capture critical runtime engine failures
     window.onerror = function(msg, url, line) {
       showRuntimeError(`${msg} (line ${line})`);
       return false;
     };
 
-    // Auto-detect if host path is root or subfolder (GitHub Pages Repo setup)
+    // Auto-detect hosting context structure (local vs nested repository)
     function buildTargetUrl() {
       const path = window.location.pathname;
       const segments = path.split('/').filter(s => s !== "");
-      
-      // If deployed in a GitHub sub-repository
       if (segments.length > 0 && !path.endsWith('.html')) {
         return `/${segments[0]}/targets.mind`;
       }
@@ -367,7 +507,7 @@
     const targetUrl = buildTargetUrl();
     sceneEl.setAttribute('mindar-image', `imageTargetSrc: ${targetUrl}; filterMinCF:0.001; filterBeta: 10`);
 
-    // Complete loading stage once engine is online
+    // AR Scene Engine bootstrap complete
     sceneEl.addEventListener("arReady", () => {
       loadingScreen.style.opacity = '0';
       setTimeout(() => {
@@ -375,15 +515,15 @@
       }, 500);
     });
 
-    // Detect missing file or assets
+    // File retrieve failure
     sceneEl.addEventListener("arError", () => {
-      showRuntimeError(`Engine could not download target descriptor database at: ${window.location.origin}${targetUrl}`);
+      showRuntimeError(`Engine could not load targets list from: ${window.location.origin}${targetUrl}`);
     });
 
-    // Image target detection triggers information panel
+    // Handle Image Target Found event
     targetEntity.addEventListener("targetFound", () => {
-      infoCard.classList.add('active');
       scanGuide.style.display = 'none';
+      interactionHint.style.display = 'block';
     });
 
     // Reset scanner viewport
