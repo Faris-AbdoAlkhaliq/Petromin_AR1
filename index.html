@@ -3,477 +3,557 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Petromin WebXR Spatial Collector</title>
+  <title>Petromin AR Game</title>
   
-  <!-- A-Frame WebXR Stable Release -->
+  <!-- Stable A-Frame & MindAR CDN pairing -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
     body {
       margin: 0;
       overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background-color: #000;
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Core Safari Webkit click propagation patch */
-    canvas.a-canvas {
-      cursor: pointer !important;
-      touch-action: none;
-    }
-
-    /* 2D HUD Scoring & Interactive AR Prompt Overlays */
-    #hud {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(18, 18, 18, 0.95);
-      border: 2px solid #FF6D00;
-      border-radius: 30px;
-      padding: 12px 24px;
-      color: #FFFFFF;
-      font-weight: 800;
-      font-size: 14px;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      pointer-events: none;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
-      letter-spacing: 1px;
-    }
-
-    #hud-dot {
-      width: 10px;
-      height: 10px;
-      background-color: #D32F2F;
-      border-radius: 50%;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 0.6; }
-      50% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(0.95); opacity: 0.6; }
-    }
-
-    /* Action button specifically for Safari users and Sensor authorization */
-    #ar-overlay-ui {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .btn {
-      background: linear-gradient(90deg, #D32F2F, #FF6D00);
-      color: white;
-      border: none;
-      padding: 16px 36px;
-      border-radius: 30px;
-      font-size: 15px;
-      font-weight: 700;
-      box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
-      cursor: pointer;
-      letter-spacing: 0.5px;
-    }
-
-    #sensor-modal {
+    /* Loading Screen using Petromin's corporate color palette */
+    #loading {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #111;
-      z-index: 99999;
+      background: linear-gradient(135deg, #D32F2F 0%, #FF6D00 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      color: white;
+      transition: opacity 0.5s ease;
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 55px;
+      height: 55px;
+      border: 5px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      border-top-color: #FFFFFF;
+      animation: spin 1s linear infinite;
+      margin-bottom: 25px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Diagnostics On-Screen Console */
+    #error-console {
       display: none;
+      background: rgba(0, 0, 0, 0.9);
+      color: #FF8A80;
+      padding: 15px;
+      border-radius: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      z-index: 10000;
+      word-break: break-all;
+      border: 1px solid #FF5252;
+    }
+
+    /* Scanner Target Bounds HUD */
+    #scan-guide {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 260px;
+      height: 260px;
+      border: 2px dashed rgba(255, 255, 255, 0.35);
+      border-radius: 24px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    #scan-guide::before, #scan-guide::after,
+    #scan-guide span::before, #scan-guide span::after {
+      content: "";
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      border-color: #FFFFFF;
+      border-style: solid;
+    }
+    /* Corner HUD Borders */
+    #scan-guide::before { top: -3px; left: -3px; border-width: 5px 0 0 5px; border-top-left-radius: 18px; }
+    #scan-guide::after { top: -3px; right: -3px; border-width: 5px 5px 0 0; border-top-right-radius: 18px; }
+    #scan-guide span::before { bottom: -3px; left: -3px; border-width: 0 0 5px 5px; border-bottom-left-radius: 18px; }
+    #scan-guide span::after { bottom: -3px; right: -3px; border-width: 0 5px 5px 0; border-bottom-right-radius: 18px; }
+
+    #scan-text {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      color: #FFFFFF;
+      bottom: -50px;
+      font-size: 13px;
+      font-weight: bold;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.9);
+      letter-spacing: 1px;
+    }
+
+    /* Brand Slide-up Modal Drawer (NOW CONTAINER FOR THE GAME) */
+    #game-container {
+      position: fixed;
+      bottom: -100%;
+      left: 0;
+      width: 100%;
+      height: 75vh;
+      background: #111116;
+      border-top-left-radius: 28px;
+      border-top-right-radius: 28px;
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+      z-index: 100;
+      transition: bottom 0.5s cubic-bezier(0.1, 0.76, 0.55, 0.94);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    #game-container.active {
+      bottom: 0;
+    }
+
+    .card-handle {
+      width: 36px;
+      height: 5px;
+      background: #444;
+      border-radius: 10px;
+      margin: 12px auto 8px;
+      flex-shrink: 0;
+    }
+
+    /* Header for the Arcade Panel */
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px 10px;
+      color: #fff;
+    }
+
+    .game-header h2 {
+      margin: 0;
+      font-size: 18px;
+      background: linear-gradient(90deg, #FF6D00, #D32F2F);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .game-score-board {
+      font-family: monospace;
+      font-size: 16px;
+      color: #00FFCC;
+      text-shadow: 0 0 5px rgba(0, 255, 210, 0.5);
+    }
+
+    /* The actual 2D Canvas container */
+    .canvas-wrapper {
+      position: relative;
+      flex-grow: 1;
+      width: 100%;
+      background: #0d0d11;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Mobile virtual control overlays and overlays for game states */
+    .game-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       color: white;
+      z-index: 105;
       text-align: center;
-      padding: 30px;
+      padding: 20px;
       box-sizing: border-box;
     }
+
+    .game-overlay button {
+      background: linear-gradient(90deg, #D32F2F, #FF6D00);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+    }
+
+    .scanner-exit-btn {
+      background: transparent !important;
+      border: 1.5px solid #FF6D00 !important;
+      color: #FF6D00 !important;
+      box-shadow: none !important;
+      margin-top: 10px !important;
+    }
   </style>
-
-  <script>
-    let score = 0;
-    const TARGET_OBJECTS = 5;
-
-    // Component: Handle Tap/Click Interaction on the 3D Oil Boxes
-    AFRAME.registerComponent('collectible-box', {
-      init: function () {
-        const el = this.el;
-
-        const collect = () => {
-          if (el.getAttribute('data-collected') === 'true') return;
-          el.setAttribute('data-collected', 'true');
-
-          // Audio Feedback (Synthesizer Beep)
-          playBeep(600 + (score * 80));
-
-          // Shrink animation before removal
-          el.setAttribute('animation__shrink', {
-            property: 'scale',
-            to: '0 0 0',
-            dur: 250,
-            easing: 'easeInBack'
-          });
-
-          setTimeout(() => {
-            if (el.parentNode) el.parentNode.removeChild(el);
-            incrementScore();
-          }, 250);
-        };
-
-        // Listen for both A-Frame standard clicks and raw touchstarts for Safari
-        el.addEventListener('click', collect);
-        el.addEventListener('touchstart', (e) => {
-          e.preventDefault();
-          collect();
-        });
-      }
-    });
-
-    // WebXR Hit-Testing Controller
-    AFRAME.registerComponent('webxr-hit-controller', {
-      init: function () {
-        this.xrHitTestSource = null;
-        this.viewerSpace = null;
-        this.refSpace = null;
-
-        // Watch for active WebXR Sessions
-        this.el.sceneEl.addEventListener('enter-vr', () => {
-          const session = this.el.sceneEl.xrSession;
-          if (!session) return;
-
-          // Request the viewer reference space and initialize WebXR hit source
-          session.requestReferenceSpace('viewer').then((space) => {
-            this.viewerSpace = space;
-            session.requestHitTestSource({ space: this.viewerSpace }).then((source) => {
-              this.xrHitTestSource = source;
-            });
-          });
-
-          session.requestReferenceSpace('local').then((space) => {
-            this.refSpace = space;
-          });
-        });
-
-        // Hide reticle if session exits
-        this.el.sceneEl.addEventListener('exit-vr', () => {
-          this.xrHitTestSource = null;
-          this.el.setAttribute('visible', false);
-        });
-      },
-
-      tick: function () {
-        if (!this.xrHitTestSource) return;
-
-        const frame = this.el.sceneEl.frame;
-        const session = this.el.sceneEl.xrSession;
-        if (!frame || !session) return;
-
-        // Perform spatial hit test
-        const hitTestResults = frame.getHitTestResults(this.xrHitTestSource);
-        if (hitTestResults.length > 0) {
-          const pose = hitTestResults[0].getPose(this.refSpace);
-          this.el.setAttribute('visible', true);
-          
-          // Move the reticle to match real-world floor surface coordinates
-          this.el.setAttribute('position', {
-            x: pose.transform.position.x,
-            y: pose.transform.position.y,
-            z: pose.transform.position.z
-          });
-        } else {
-          this.el.setAttribute('visible', false);
-        }
-      }
-    });
-
-    function playBeep(frequency) {
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.setValueAtTime(frequency, ctx.currentTime);
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.2);
-      } catch (e) {}
-    }
-
-    function incrementScore() {
-      score++;
-      document.getElementById('score-val').innerText = `${score} / ${TARGET_OBJECTS}`;
-
-      if (score >= TARGET_OBJECTS) {
-        document.getElementById('hud').innerHTML = `<span id="hud-dot" style="background-color: #4CAF50;"></span> ALL BOXES COLLECTED!`;
-        
-        // Render 3D Stats Card in front of camera view coordinates
-        const card = document.querySelector('#results-card');
-        card.setAttribute('position', '0 0 -2.0');
-        card.setAttribute('animation__pop', {
-          property: 'scale',
-          to: '1.2 1.2 1.2',
-          dur: 800,
-          easing: 'easeOutBack'
-        });
-      }
-    }
-
-    // Manual Spawner for devices that do not support WebXR (Safari / Standard Desktop)
-    function spawnStaticFallbackBoxes() {
-      const container = document.querySelector('#collectibles-group');
-      if (container.children.length > 0) return; // Already spawned
-
-      for (let i = 0; i < TARGET_OBJECTS; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const radius = 3.0 + Math.random() * 2.0; 
-        const x = Math.cos(angle) * radius;
-        const z = Math.sin(angle) * radius;
-        const y = 0.5 + (Math.random() * 1.5);
-
-        createOilBox(x, y, z);
-      }
-    }
-
-    // Create the actual 3D Petromin Oil Box
-    function createOilBox(x, y, z) {
-      const container = document.querySelector('#collectibles-group');
-      const boxEntity = document.createElement('a-entity');
-      boxEntity.setAttribute('class', 'clickable');
-      boxEntity.setAttribute('position', `${x} ${y} ${z}`);
-      boxEntity.setAttribute('collectible-box', '');
-
-      // Core Canister Model
-      const can = document.createElement('a-box');
-      can.setAttribute('width', '0.45');
-      can.setAttribute('height', '0.65');
-      can.setAttribute('depth', '0.22');
-      can.setAttribute('material', 'color: #1A1A1A; roughness: 0.3; metalness: 0.2');
-      boxEntity.appendChild(can);
-
-      // Red Top Lid Cap
-      const lid = document.createElement('a-cylinder');
-      lid.setAttribute('radius', '0.07');
-      lid.setAttribute('height', '0.08');
-      lid.setAttribute('position', '0 0.34 0');
-      lid.setAttribute('material', 'color: #D32F2F');
-      boxEntity.appendChild(lid);
-
-      // Petromin Brand Decal Label
-      const label = document.createElement('a-plane');
-      label.setAttribute('width', '0.42');
-      label.setAttribute('height', '0.45');
-      label.setAttribute('position', '0 0 0.112');
-      label.setAttribute('material', 'color: #FF6D00');
-
-      const text = document.createElement('a-text');
-      text.setAttribute('value', 'PETROMIN\n\nPREMIUM\nOIL');
-      text.setAttribute('color', '#FFFFFF');
-      text.setAttribute('align', 'center');
-      text.setAttribute('width', '1.1');
-      text.setAttribute('position', '0 0 0.01');
-      text.setAttribute('font', 'aileron');
-      label.appendChild(text);
-      boxEntity.appendChild(label);
-
-      // Ambient Animation Loop (Float/Spin)
-      boxEntity.setAttribute('animation__spin', {
-        property: 'rotation',
-        to: '0 360 0',
-        loop: true,
-        dur: 8000 + (Math.random() * 3000),
-        easing: 'linear'
-      });
-
-      boxEntity.setAttribute('animation__bob', {
-        property: 'position',
-        from: `${x} ${y} ${z}`,
-        to: `${x} ${y + 0.15} ${z}`,
-        loop: true,
-        dir: 'alternate',
-        dur: 1500 + (Math.random() * 800),
-        easing: 'easeInOutQuad'
-      });
-
-      container.appendChild(boxEntity);
-    }
-  </script>
 </head>
 <body>
 
-  <!-- iOS Gyroscope Permission Dialog (Needed for Magic Window fallback on Safari) -->
-  <div id="sensor-modal">
-    <h2>Sensor Integration Access</h2>
-    <p style="opacity: 0.8; max-width: 320px; font-size: 14px; line-height: 1.6;">
-      To let you look around and spot hidden packages using Safari, we need access to your device's motion sensors.
-    </p>
-    <button class="btn" style="margin-top:20px;" onclick="requestSensors()">ALLOW SENSORS</button>
+  <!-- Loading Animation Overlay -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <h3 style="margin:0; letter-spacing: 1px;">PETROMIN AR</h3>
+    <p style="font-size:12px; opacity:0.8; margin-top:5px; font-weight: 500;">Accessing Camera Feed...</p>
   </div>
 
-  <!-- HUD Interface -->
-  <div id="hud">
-    <span id="hud-dot"></span>
-    <span>PETROMIN SPATIAL: <span id="score-val">0 / 5</span></span>
+  <!-- On-Screen Console for Diagnostics -->
+  <div id="error-console"></div>
+
+  <!-- HUD Overlay -->
+  <div id="scan-guide">
+    <span></span>
+    <div id="scan-text">ALIGN WITH PETROMIN LOGO</div>
   </div>
 
-  <!-- WebXR Overlay Controls -->
-  <div id="ar-overlay-ui">
-    <!-- Visible only on mobile flat screens to manually trigger the AR device setup -->
-    <button class="btn" id="start-ar-btn" style="display: none;" onclick="enterWebXR()">ENTER IMMERSIVE WEBAR</button>
+  <!-- Interactive 2D Game Drawer -->
+  <div id="game-container">
+    <div class="card-handle"></div>
+    <div class="game-header">
+      <h2>PETROMIN RUN</h2>
+      <div class="game-score-board" id="score-text">SCORE: 00</div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="gameCanvas"></canvas>
+      
+      <!-- Start/Game Over Overlay screens within the console -->
+      <div id="start-overlay" class="game-overlay">
+        <h3 style="margin: 0; font-size: 24px; color: #FF6D00;">PETROLUBE CHASE</h3>
+        <p style="font-size: 13px; color: #ccc; margin-top: 8px;">Drag your Petromin truck left & right.<br>Collect Oil Drops but avoid Spanners!</p>
+        <button onclick="startGame()">TAP TO PLAY</button>
+      </div>
+
+      <div id="gameover-overlay" class="game-overlay" style="display: none;">
+        <h3 style="margin: 0; font-size: 28px; color: #D32F2F;">GAME OVER</h3>
+        <p id="final-score-text" style="font-size: 16px; margin: 10px 0;">Final Score: 0</p>
+        <button onclick="startGame()">PLAY AGAIN</button>
+        <button class="scanner-exit-btn" onclick="resetScanner()">SCAN ANOTHER LOGO</button>
+      </div>
+    </div>
   </div>
 
-  <!-- WebGL Render Stage -->
-  <!-- Configured with WebXR hit-test capability enabled -->
+  <!-- AR Scene -->
   <a-scene 
-    webxr="optionalFeatures: hit-test, local-floor; requiredFeatures: local;"
-    vr-mode-ui="enabled: false">
+    id="ar-scene"
+    color-space="sRGB" 
+    renderer="colorManagement: true, physicallyCorrectLights" 
+    vr-mode-ui="enabled: false" 
+    device-orientation-permission-ui="enabled: false">
     
-    <!-- Camera, Cursor, and Raycaster System -->
-    <!-- cursor is optimized to prevent Safari "fuse" freeze-lock -->
-    <a-camera id="camera" position="0 1.6 0" look-controls="magicWindowTrackingEnabled: true">
-      <a-cursor 
-        id="cursor"
-        raycaster="objects: .clickable"
-        material="color: #FF6D00; shader: flat"
-        position="0 0 -1.2"
-        geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.020"
-        fuse="false">
-      </a-cursor>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Mission Finish Presentation Card -->
-      <a-entity id="results-card" position="0 0 -100" scale="0 0 0">
-        <a-plane width="1.6" height="1.8" material="color: #121212; opacity: 0.96; roughness: 0.6">
-          <a-ring color="#FF6D00" radius-inner="1.05" radius-outer="1.06" scale="1.02 1.02 1"></a-ring>
-          
-          <a-text value="MISSION COMPLETE" color="#FFFFFF" align="center" width="1.5" position="0 0.6 0.01" font="aileron" bold="true"></a-text>
-          <a-text value="You found all Petromin Canisters!" color="#FF6D00" align="center" width="1.1" position="0 0.45 0.01" font="aileron"></a-text>
-          
-          <a-plane width="1.3" height="0.25" position="0 0.15 0.01" material="color: #1A1A1A">
-            <a-text value="5 OF 5 LOCATED" color="#4CAF50" align="center" width="1.2" position="0 0.05 0.01" font="aileron" bold="true"></a-text>
-            <a-text value="PERFECT RUN SCORE: 100%" color="#AAA" align="center" width="0.8" position="0 -0.06 0.01" font="dejavu"></a-text>
-          </a-plane>
-
-          <a-text 
-            value="PETROMIN CORPORATION" 
-            color="#FF6D00" 
-            align="center" 
-            width="0.9" 
-            position="0 -0.15 0.01" 
-            font="aileron"
-            bold="true">
-          </a-text>
-
-          <a-text 
-            value="Founded in 1968, Petromin is Saudi Arabia's leading modern multi-brand automotive services platform, managing state-of-the-art lubricant networks and commercial EV infrastructures." 
-            color="#CCCCCC" 
-            align="center" 
-            width="1.3" 
-            position="0 -0.38 0.01" 
-            line-height="42"
-            font="dejavu"
-            wrap-count="40">
-          </a-text>
-
-          <!-- Reload Webapp Button -->
-          <a-plane class="clickable" width="0.8" height="0.16" position="0 -0.68 0.02" material="color: #D32F2F; shader: flat" onclick="window.location.reload()">
-            <a-text value="PLAY AGAIN" color="#FFFFFF" align="center" width="1.1" position="0 0 0.01" font="aileron" bold="true"></a-text>
-          </a-plane>
-        </a-plane>
-      </a-entity>
-    </a-camera>
-
-    <!-- WebXR Hit Testing Target Reticle (Aligns to physical floor plane) -->
-    <a-entity id="ar-reticle" webxr-hit-controller visible="false">
-      <a-ring color="#FF6D00" rotation="-90 0 0" radius-inner="0.15" radius-outer="0.2" material="shader: flat; opacity: 0.8"></a-ring>
-      <a-circle color="#D32F2F" rotation="-90 0 0" radius="0.05" material="shader: flat; opacity: 0.9"></a-circle>
-    </a-entity>
-
-    <!-- Global Stage Lights -->
-    <a-light type="ambient" color="#FFF" intensity="0.8"></a-light>
-    <a-light type="directional" color="#FF6D00" intensity="0.5" position="-1 3 1"></a-light>
-
-    <!-- Space Anchor for generated 3D collectibles -->
-    <a-entity id="collectibles-group"></a-entity>
-  </a-scene>
+    <!-- Index 0 corresponds to the compiled logo marker inside targets.mind -->
+    <a-entity id="ar-target" mindar-image-target="targetIndex: 0"></a-entity>
+  </scene>
 
   <script>
-    const scene = document.querySelector('a-scene');
+    const loadingScreen = document.getElementById('loading');
+    const scanGuide = document.getElementById('scan-guide');
+    const gameContainer = document.getElementById('game-container');
+    const targetEntity = document.getElementById('ar-target');
+    const sceneEl = document.getElementById('ar-scene');
+    const errConsole = document.getElementById('error-console');
 
-    // Run when the scene fully compiles
-    scene.addEventListener('loaded', () => {
-      // Check if the current browser environment can run full WebXR AR Core
-      if (navigator.xr) {
-        navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-          if (supported) {
-            // Android Chrome / AR Headset detected! Show the XR button
-            document.getElementById('start-ar-btn').style.display = 'block';
-            
-            // Spawn boxes dynamically onto real-world planes when they tap screen in WebXR
-            scene.addEventListener('click', (event) => {
-              if (scene.is('vr-mode')) {
-                const reticle = document.querySelector('#ar-reticle');
-                if (reticle.getAttribute('visible') && score < TARGET_OBJECTS) {
-                  const pos = reticle.getAttribute('position');
-                  createOilBox(pos.x, pos.y + 0.3, pos.z); // Spawn exactly on the floor!
-                }
-              }
-            });
+    // Display error stack if file compilation fails
+    function showRuntimeError(message) {
+      errConsole.style.display = 'block';
+      errConsole.innerHTML += '<strong>[System Check]:</strong> ' + message + '<br>';
+    }
+
+    // Capture global page failures
+    window.onerror = function(msg, url, line) {
+      showRuntimeError(`${msg} (line ${line})`);
+      return false;
+    };
+
+    // Auto-detect if host path is root or subfolder (GitHub Pages Repo setup)
+    function buildTargetUrl() {
+      const path = window.location.pathname;
+      const segments = path.split('/').filter(s => s !== "");
+      
+      // If deployed in a GitHub sub-repository
+      if (segments.length > 0 && !path.endsWith('.html')) {
+        return `/${segments[0]}/targets.mind`;
+      }
+      return 'targets.mind';
+    }
+
+    const targetUrl = buildTargetUrl();
+    sceneEl.setAttribute('mindar-image', `imageTargetSrc: ${targetUrl}; filterMinCF:0.001; filterBeta: 10`);
+
+    // Complete loading stage once engine is online
+    sceneEl.addEventListener("arReady", () => {
+      loadingScreen.style.opacity = '0';
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+      }, 500);
+    });
+
+    // Detect missing file or assets
+    sceneEl.addEventListener("arError", () => {
+      showRuntimeError(`Engine could not download target descriptor database at: ${window.location.origin}${targetUrl}`);
+    });
+
+    // Image target detection triggers information panel
+    targetEntity.addEventListener("targetFound", () => {
+      gameContainer.classList.add('active');
+      scanGuide.style.display = 'none';
+      // Auto-resize game canvas when revealed
+      initCanvas();
+    });
+
+    // Reset scanner viewport
+    function resetScanner() {
+      stopGame();
+      gameContainer.classList.remove('active');
+      setTimeout(() => {
+        scanGuide.style.display = 'block';
+      }, 300);
+    }
+
+    // ==========================================
+    //            2D CANVAS ARCADE GAME
+    // ==========================================
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startOverlay = document.getElementById('start-overlay');
+    const gameoverOverlay = document.getElementById('gameover-overlay');
+    const scoreText = document.getElementById('score-text');
+    const finalScoreText = document.getElementById('final-score-text');
+
+    let gameActive = false;
+    let score = 0;
+    let lives = 3;
+    let animationId = null;
+
+    // Player (Truck) state
+    const player = {
+      x: 0,
+      y: 0,
+      width: 55,
+      height: 35,
+      speed: 15
+    };
+
+    let items = [];
+    let spawnRate = 40; // frames between spawns
+    let frameCount = 0;
+
+    function initCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      player.x = canvas.width / 2 - player.width / 2;
+      player.y = canvas.height - player.height - 15;
+    }
+
+    // Touch and Drag controls
+    let isDragging = false;
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; movePlayer(e); });
+    canvas.addEventListener('mousemove', (e) => { if (isDragging) movePlayer(e); });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; movePlayer(e.touches[0]); });
+    canvas.addEventListener('touchmove', (e) => { if (isDragging) movePlayer(e.touches[0]); e.preventDefault(); }, { passive: false });
+    window.addEventListener('touchend', () => { isDragging = false; });
+
+    function movePlayer(input) {
+      const rect = canvas.getBoundingClientRect();
+      const relativeX = input.clientX - rect.left;
+      player.x = Math.max(0, Math.min(canvas.width - player.width, relativeX - player.width / 2));
+    }
+
+    function startGame() {
+      startOverlay.style.display = 'none';
+      gameoverOverlay.style.display = 'none';
+      initCanvas();
+      
+      score = 0;
+      lives = 3;
+      items = [];
+      gameActive = true;
+      scoreText.innerText = `SCORE: 00`;
+      
+      if(animationId) cancelAnimationFrame(animationId);
+      gameLoop();
+    }
+
+    function stopGame() {
+      gameActive = false;
+      if(animationId) cancelAnimationFrame(animationId);
+    }
+
+    function gameOver() {
+      gameActive = false;
+      finalScoreText.innerText = `Final Score: ${score}`;
+      gameoverOverlay.style.display = 'flex';
+    }
+
+    function spawnItem() {
+      const types = ['oil', 'oil', 'obstacle']; // 66% chance of oil, 33% hazard
+      const type = types[Math.floor(Math.random() * types.length)];
+      
+      items.push({
+        x: Math.random() * (canvas.width - 24),
+        y: -30,
+        size: 24,
+        type: type,
+        speed: 3 + Math.random() * 4
+      });
+    }
+
+    function gameLoop() {
+      if (!gameActive) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw road decoration stripes
+      ctx.fillStyle = '#1e1e24';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#333';
+      for(let y = 0; y < canvas.height; y += 40) {
+        ctx.fillRect(canvas.width / 2 - 4, y, 8, 20);
+      }
+
+      // Draw player truck (Styled like a Petromin Quick Lube van)
+      // Truck bed
+      ctx.fillStyle = '#D32F2F'; // Petromin corporate red
+      ctx.fillRect(player.x, player.y + 10, player.width - 15, player.height - 10);
+      // Truck cabin
+      ctx.fillStyle = '#FF6D00'; // Petromin Orange
+      ctx.fillRect(player.x + player.width - 15, player.y + 12, 15, player.height - 12);
+      // Truck windshield
+      ctx.fillStyle = '#E0F7FA';
+      ctx.fillRect(player.x + player.width - 6, player.y + 14, 5, 8);
+      // White Stripe accent
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(player.x + 5, player.y + 17, player.width - 20, 3);
+      // Wheels
+      ctx.fillStyle = '#111';
+      ctx.beginPath();
+      ctx.arc(player.x + 12, player.y + player.height, 7, 0, Math.PI * 2);
+      ctx.arc(player.x + player.width - 12, player.y + player.height, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Manage and Draw Items
+      frameCount++;
+      if (frameCount % spawnRate === 0) {
+        spawnItem();
+        // Speed up spawn rate gradually as points are gained
+        if(spawnRate > 15 && score % 50 === 0) spawnRate--; 
+      }
+
+      for (let i = items.length - 1; i >= 0; i--) {
+        const item = items[i];
+        item.y += item.speed;
+
+        // Collision Check
+        if (
+          item.x < player.x + player.width &&
+          item.x + item.size > player.x &&
+          item.y < player.y + player.height &&
+          item.y + item.size > player.y
+        ) {
+          // Trigger impact logic
+          if (item.type === 'oil') {
+            score += 10;
+            scoreText.innerText = `SCORE: ${score}`;
           } else {
-            // Device supports WebXR but not AR (or it's iOS Safari fallback)
-            spawnStaticFallbackBoxes();
-          }
-        });
-      } else {
-        // No WebXR support detected (standard Safari setup)
-        spawnStaticFallbackBoxes();
-      }
-    });
-
-    // Request WebXR Immersive AR mode
-    function enterWebXR() {
-      scene.enterVR(); // A-Frame auto-prompts immersive-ar if configured on the scene element
-    }
-
-    // Permission and initialization handler for Safari (iOS)
-    function requestSensors() {
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(permissionState => {
-            if (permissionState === 'granted') {
-              document.getElementById('sensor-modal').style.display = 'none';
-              spawnStaticFallbackBoxes();
-            } else {
-              alert("Sensor tracking denied. You'll need to enable it to look around in AR.");
+            lives--;
+            // Shake visual indicator
+            gameContainer.style.animation = 'none';
+            setTimeout(() => gameContainer.style.animation = 'shake 0.3s', 1);
+            if (lives <= 0) {
+              gameOver();
+              return;
             }
-          })
-          .catch(console.error);
-      } else {
-        document.getElementById('sensor-modal').style.display = 'none';
-        spawnStaticFallbackBoxes();
-      }
-    }
+          }
+          items.splice(i, 1);
+          continue;
+        }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      // Only show iOS Safari sensor authorization prompt if we are on a Webkit-restricted device
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        document.getElementById('sensor-modal').style.display = 'flex';
+        // Off-screen check
+        if (item.y > canvas.height) {
+          items.splice(i, 1);
+          continue;
+        }
+
+        // Draw Items
+        if (item.type === 'oil') {
+          // Draw bright Orange/Yellow droplet
+          ctx.fillStyle = '#FF9100';
+          ctx.beginPath();
+          ctx.moveTo(item.x + item.size/2, item.y);
+          ctx.quadraticCurveTo(item.x + item.size, item.y + item.size, item.x + item.size/2, item.y + item.size);
+          ctx.quadraticCurveTo(item.x, item.y + item.size, item.x + item.size/2, item.y);
+          ctx.fill();
+        } else {
+          // Draw metallic Spanner wrench obstacle
+          ctx.fillStyle = '#B0BEC5';
+          ctx.fillRect(item.x + item.size/2 - 3, item.y, 6, item.size);
+          ctx.beginPath();
+          ctx.arc(item.x + item.size/2, item.y + 3, 7, 0, Math.PI * 2);
+          ctx.arc(item.x + item.size/2, item.y + item.size - 3, 7, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
-    });
+
+      // Draw active remaining Lives (little red stars/bars)
+      for (let l = 0; l < 3; l++) {
+        ctx.fillStyle = l < lives ? '#D32F2F' : '#333';
+        ctx.fillRect(15 + l * 18, 15, 12, 12);
+      }
+
+      animationId = requestAnimationFrame(gameLoop);
+    }
   </script>
+
+  <!-- Shake Animation CSS Inject -->
+  <style>
+    @keyframes shake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-8px, 0); }
+      40% { transform: translate(6px, 0); }
+      60% { transform: translate(-4px, 0); }
+      80% { transform: translate(2px, 0); }
+      100% { transform: translate(0, 0); }
+    }
+  </style>
 </body>
 </html>
