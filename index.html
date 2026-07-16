@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Petromin AR Scanner</title>
+  <title>Petromin Markerless AR Collector</title>
   
-  <!-- Stable A-Frame & MindAR CDN pairing -->
+  <!-- Stable A-Frame Release with Device Orientation capabilities -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
     body {
@@ -52,385 +51,422 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Diagnostics On-Screen Console */
-    #error-console {
-      display: none;
-      background: rgba(0, 0, 0, 0.9);
-      color: #FF8A80;
-      padding: 15px;
-      border-radius: 12px;
-      font-family: monospace;
-      font-size: 11px;
+    /* 2D Score & Progress HUD Overlay */
+    #score-hud {
       position: absolute;
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      z-index: 10000;
-      word-break: break-all;
-      border: 1px solid #FF5252;
-    }
-
-    /* Scanner Target Bounds HUD */
-    #scan-guide {
-      position: absolute;
-      top: 45%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 260px;
-      height: 260px;
-      border: 2px dashed rgba(255, 255, 255, 0.35);
-      border-radius: 24px;
-      pointer-events: none;
-      z-index: 10;
-    }
-
-    #scan-guide::before, #scan-guide::after,
-    #scan-guide span::before, #scan-guide span::after {
-      content: "";
-      position: absolute;
-      width: 35px;
-      height: 35px;
-      border-color: #FFFFFF;
-      border-style: solid;
-    }
-    /* Corner HUD Borders */
-    #scan-guide::before { top: -3px; left: -3px; border-width: 5px 0 0 5px; border-top-left-radius: 18px; }
-    #scan-guide::after { top: -3px; right: -3px; border-width: 5px 5px 0 0; border-top-right-radius: 18px; }
-    #scan-guide span::before { bottom: -3px; left: -3px; border-width: 0 0 5px 5px; border-bottom-left-radius: 18px; }
-    #scan-guide span::after { bottom: -3px; right: -3px; border-width: 0 5px 5px 0; border-bottom-right-radius: 18px; }
-
-    #scan-text {
-      position: absolute;
-      width: 100%;
-      text-align: center;
-      color: #FFFFFF;
-      bottom: -50px;
-      font-size: 13px;
-      font-weight: bold;
-      text-shadow: 0 2px 5px rgba(0,0,0,0.9);
-      letter-spacing: 1px;
-    }
-
-    /* 2D HUD instruction element overlay */
-    #hud-interaction-tip {
-      display: none;
-      position: absolute;
-      bottom: 30px;
+      top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.85);
-      color: #FFF;
-      padding: 12px 24px;
+      background: rgba(21, 21, 21, 0.9);
+      border: 2px solid #FF6D00;
       border-radius: 30px;
-      font-size: 12px;
-      font-weight: bold;
+      padding: 10px 24px;
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 14px;
       z-index: 50;
-      border: 1.5px solid #FF6D00;
-      pointer-events: none;
-      letter-spacing: 0.5px;
       text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    #score-dot {
+      width: 10px;
+      height: 10px;
+      background-color: #D32F2F;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+
+    /* Device Camera Background Overlay */
+    #webcam-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    #sensor-prompt {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 99999;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+
+    .action-btn {
+      background: linear-gradient(90deg, #D32F2F, #FF6D00);
+      color: white;
+      border: none;
+      padding: 16px 32px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4);
     }
   </style>
 
   <script>
-    // Click handling component for spatial UI buttons
-    AFRAME.registerComponent('ar-button-handler', {
+    let collectedCount = 0;
+    const TOTAL_BOXES = 5;
+
+    // Component to handle tapping the collectible oil boxes
+    AFRAME.registerComponent('collectible-box', {
       init: function () {
         const el = this.el;
-        
-        el.addEventListener('mouseenter', () => {
-          el.setAttribute('material', 'color', '#FF6D00');
-        });
-
-        el.addEventListener('mouseleave', () => {
-          el.setAttribute('material', 'color', '#D32F2F');
-        });
 
         el.addEventListener('click', () => {
-          // Visual click feedback
-          el.setAttribute('scale', '0.9 0.9 1');
-          setTimeout(() => el.setAttribute('scale', '1 1 1'), 150);
+          // Play clean synthesized collection beep sound
+          playBeepSound(600 + (collectedCount * 100));
 
-          // Custom business logic based on element ID
-          if (el.id === 'btn-close') {
-            const card = document.querySelector('#info-3d-card');
-            card.setAttribute('animation__hide', {
-              property: 'scale',
-              to: '0 0 0',
-              dur: 400,
-              easing: 'easeInBack'
-            });
-            document.querySelector('#hud-interaction-tip').innerText = "TAP CARD CORNER GLOW TO RE-OPEN";
-          } else if (el.id === 'info-3d-card' || el.id === 'neon-glow-ring') {
-            // Re-open if they tap the closed ring card base
-            const card = document.querySelector('#info-3d-card');
-            if (card.getAttribute('scale').x === 0) {
-              card.setAttribute('animation__show', {
-                property: 'scale',
-                to: '1 1 1',
-                dur: 500,
-                easing: 'easeOutBack'
-              });
-              document.querySelector('#hud-interaction-tip').innerText = "USE CENTER RETICLE TO TAP BUTTONS";
-            }
-          }
+          // Simple pop out visual scaling effect before destroying
+          el.setAttribute('animation__scale', {
+            property: 'scale',
+            to: '0 0 0',
+            dur: 200,
+            easing: 'easeInBack'
+          });
+
+          setTimeout(() => {
+            el.parentNode.removeChild(el);
+            updateScore();
+          }, 200);
         });
       }
     });
+
+    // Synthesized clean audio context outputs for native app feel without downloading files
+    function playBeepSound(freq) {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
+      } catch (e) {}
+    }
+
+    function updateScore() {
+      collectedCount++;
+      document.getElementById('score-val').innerText = `${collectedCount} / ${TOTAL_BOXES}`;
+      
+      if (collectedCount >= TOTAL_BOXES) {
+        document.getElementById('score-hud').innerHTML = `<span id="score-dot" style="background-color: #4CAF50;"></span> ALL BOXES COLLECTED!`;
+        
+        // Show the results card directly centered on user's field of view
+        const resultsCard = document.querySelector('#results-3d-card');
+        resultsCard.setAttribute('position', '0 0 -2.5'); // Spawn in front of screen coordinates
+        resultsCard.setAttribute('animation__show', {
+          property: 'scale',
+          to: '1.2 1.2 1.2',
+          dur: 800,
+          easing: 'easeOutBack'
+        });
+      }
+    }
   </script>
 </head>
 <body>
 
+  <!-- iOS/Android Device Orientation Permission Gate -->
+  <div id="sensor-prompt">
+    <h2>Device Sensors Required</h2>
+    <p style="opacity: 0.8; max-width: 320px; font-size: 14px; line-height: 1.6;">
+      This markerless AR game relies on your mobile device's gyroscope to find and collect Petromin oil boxes around your room.
+    </p>
+    <button class="action-btn" onclick="requestDeviceSensors()">ENABLE AR PLAY</button>
+  </div>
+
   <!-- Loading Animation Overlay -->
   <div id="loading">
     <div class="spinner"></div>
-    <h3 style="margin:0; letter-spacing: 1px;">PETROMIN AR</h3>
-    <p style="font-size:12px; opacity:0.8; margin-top:5px; font-weight: 500;">Accessing Camera Feed...</p>
+    <h3 style="margin:0; letter-spacing: 1.5px;">PETROMIN AR ENGINE</h3>
+    <p style="font-size:12px; opacity:0.8; margin-top:5px; font-weight: 500;">Accessing Real-time Environment...</p>
   </div>
 
-  <!-- On-Screen Console for Diagnostics -->
-  <div id="error-console"></div>
-
-  <!-- HUD Overlay -->
-  <div id="scan-guide">
-    <span></span>
-    <div id="scan-text">ALIGN WITH PETROMIN LOGO</div>
+  <!-- 2D HUD Score Progress Bar -->
+  <div id="score-hud">
+    <span id="score-dot"></span>
+    <span>PETROMIN BOXES: <span id="score-val">0 / 5</span></span>
   </div>
 
-  <!-- Camera Reticle Guide HUD -->
-  <div id="hud-interaction-tip">
-    USE CENTER RETICLE TO TAP BUTTONS
-  </div>
+  <!-- Device camera background plane -->
+  <video id="webcam-bg" autoplay playsinline muted></video>
 
-  <!-- AR Scene -->
+  <!-- AR Spatial View Scene Frame -->
   <a-scene 
     id="ar-scene"
-    color-space="sRGB" 
-    renderer="colorManagement: true, physicallyCorrectLights" 
     vr-mode-ui="enabled: false" 
     device-orientation-permission-ui="enabled: false"
     raycaster="objects: .clickable">
-    
-    <!-- AR Camera featuring a dynamic targeting system for clicking 3D UI on mobile screens -->
-    <a-camera position="0 0 0" look-controls="enabled: false">
+
+    <!-- Interactive Raycasting Reticle (Users align the box in center reticle to click) -->
+    <a-camera id="ar-camera" position="0 1.6 0" look-controls="magicWindowTrackingEnabled: true">
       <a-cursor 
         id="cursor"
         raycaster="objects: .clickable"
-        material="color: #FFFFFF; shader: flat; opacity: 0.8"
-        position="0 0 -1"
-        geometry="primitive: ring; radiusInner: 0.009; radiusOuter: 0.015">
+        material="color: #FF6D00; shader: flat; opacity: 0.9"
+        position="0 0 -1.2"
+        geometry="primitive: ring; radiusInner: 0.012; radiusOuter: 0.020"
+        animation__click="property: scale; startEvents: click; easing: easeInCubic; dur: 150; from: 0.1 0.1 0.1; to: 1 1 1">
       </a-cursor>
-    </a-camera>
 
-    <!-- Index 0 corresponds to the compiled logo marker inside targets.mind -->
-    <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-
-      <!-- Interactive 3D Spatial Information Panel -->
+      <!-- Anchored Presentation Result Card that opens on Camera Pivot on complete -->
       <a-entity 
-        id="info-3d-card" 
-        class="clickable"
-        position="0 0 0.1" 
-        scale="0 0 0"
-        ar-button-handler>
+        id="results-3d-card" 
+        position="0 0 -100" 
+        scale="0 0 0">
         
-        <!-- UI Backplane (Modern Matte Obsidian Finish) -->
+        <!-- Matte Obsidian UI Container Background -->
         <a-plane 
-          width="1.0" 
-          height="1.3" 
-          material="color: #121212; opacity: 0.96; transparent: true; roughness: 0.6; metalness: 0.2" 
-          geometry="primitive: plane">
+          width="1.6" 
+          height="1.9" 
+          material="color: #121212; opacity: 0.98; transparent: true; roughness: 0.6">
           
-          <!-- Outer Neon Orange Boundary Accent Frame -->
-          <a-ring id="neon-glow-ring" class="clickable" color="#FF6D00" radius-inner="0.67" radius-outer="0.68" scale="1.02 1.02 1" position="0 0 0.002" ar-button-handler></a-ring>
+          <!-- Outer Neon Border -->
+          <a-ring color="#FF6D00" radius-inner="1.11" radius-outer="1.12" scale="1.02 1.02 1" position="0 0 0.002"></a-ring>
 
           <!-- HEADER PANEL -->
-          <!-- Small Red Tag Design Component -->
-          <a-plane width="0.3" height="0.05" position="-0.32 0.52 0.01" material="color: #D32F2F; shader: flat"></a-plane>
+          <a-plane width="0.4" height="0.06" position="-0.5 0.72 0.01" material="color: #D32F2F; shader: flat"></a-plane>
           
           <a-text 
-            value="PETROMIN CORPORATION" 
+            value="MISSION ACCOMPLISHED" 
             color="#FFFFFF" 
             align="left" 
-            width="0.9" 
-            position="-0.45 0.45 0.01" 
+            width="1.4" 
+            position="-0.7 0.6 0.01" 
             font="aileron"
-            wrap-count="20">
+            bold="true">
           </a-text>
 
           <a-text 
-            value="An Al-Dabbagh Group Company" 
+            value="You successfully collected all Petromin packages!" 
             color="#FF6D00" 
             align="left" 
-            width="0.7" 
-            position="-0.45 0.38 0.01" 
+            width="1.1" 
+            position="-0.7 0.5 0.01" 
             font="aileron">
           </a-text>
 
-          <!-- HORIZONTAL RULE DECORATIVE DIVIDER -->
-          <a-plane width="0.9" height="0.005" position="0 0.32 0.01" material="color: #444; shader: flat"></a-plane>
+          <a-plane width="1.4" height="0.008" position="0 0.42 0.01" material="color: #444; shader: flat"></a-plane>
 
-          <!-- STATS DISPLAY (3 Wide Grid Layout) -->
-          <!-- Stat 1 -->
-          <a-plane width="0.26" height="0.16" position="-0.30 0.18 0.01" material="color: #1A1A1A">
-            <a-text value="1968" color="#D32F2F" align="center" width="0.7" position="0 0.03 0.005" font="aileron" bold="true"></a-text>
-            <a-text value="FOUNDED" color="#999" align="center" width="0.4" position="0 -0.04 0.005" font="dejavu"></a-text>
+          <!-- HIGHLIGHTED SCORE RESULTS METRICS -->
+          <a-plane width="1.4" height="0.25" position="0 0.22 0.01" material="color: #1A1A1A">
+            <a-text value="5 / 5 PACKAGES" color="#4CAF50" align="center" width="1.2" position="0 0.05 0.005" font="aileron" bold="true"></a-text>
+            <a-text value="SCORE RANK: ELITE AUTOMOTIVE NAVIGATOR" color="#AAA" align="center" width="0.75" position="0 -0.06 0.005" font="dejavu"></a-text>
           </a-plane>
 
-          <!-- Stat 2 -->
-          <a-plane width="0.26" height="0.16" position="0 0.18 0.01" material="color: #1A1A1A">
-            <a-text value="6,000+" color="#D32F2F" align="center" width="0.7" position="0 0.03 0.005" font="aileron" bold="true"></a-text>
-            <a-text value="TEAM SIZE" color="#999" align="center" width="0.4" position="0 -0.04 0.005" font="dejavu"></a-text>
-          </a-plane>
-
-          <!-- Stat 3 -->
-          <a-plane width="0.26" height="0.16" position="0.30 0.18 0.01" material="color: #1A1A1A">
-            <a-text value="40+" color="#D32F2F" align="center" width="0.7" position="0 0.03 0.005" font="aileron" bold="true"></a-text>
-            <a-text value="MARKETS" color="#999" align="center" width="0.4" position="0 -0.04 0.005" font="dejavu"></a-text>
-          </a-plane>
-
-          <!-- OVERVIEW SECTION -->
+          <!-- PETROMIN CORPORATE OVERVIEW -->
           <a-text 
-            value="CORPORATE OVERVIEW" 
+            value="PETROMIN CORPORATION PROFILE" 
             color="#FF6D00" 
             align="left" 
-            width="0.55" 
-            position="-0.45 0.04 0.01" 
+            width="0.8" 
+            position="-0.7 -0.02 0.01" 
             font="aileron"
             bold="true">
           </a-text>
 
           <a-text 
-            value="Originally established by Royal Decree as a lubricating oil company, Petromin has evolved into the leading ultra-modern multi-brand automotive services and mobility solutions platform in Saudi Arabia." 
+            value="Established by Royal Decree in 1968, Petromin is Saudi Arabia's leading modern multi-brand automotive services platform. Operating over 8 key business pillars, including Petrolube, Quick Care, and Electromin EV infrastructure." 
             color="#CCCCCC" 
             align="left" 
-            width="0.88" 
-            position="-0.45 -0.10 0.01" 
+            width="1.4" 
+            position="-0.7 -0.22 0.01" 
             line-height="46"
             font="dejavu"
-            wrap-count="40">
+            wrap-count="42">
           </a-text>
 
-          <!-- PILLARS SECTION -->
-          <a-text 
-            value="KEY ENTERPRISE PILLARS" 
-            color="#FF6D00" 
-            align="left" 
-            width="0.55" 
-            position="-0.45 -0.25 0.01" 
-            font="aileron"
-            bold="true">
-          </a-text>
-
-          <!-- Double Column Pill Layout lists -->
-          <a-text 
-            value="* Petrolube (Lubricants)\n* Petromin Express\n* Auto Care (Repairs)\n* Fuel Retail Stations" 
-            color="#E0E0E0" 
-            align="left" 
-            width="0.45" 
-            position="-0.45 -0.41 0.01" 
-            line-height="50"
-            font="dejavu">
-          </a-text>
-
-          <a-text 
-            value="* National Fleet (NFC)\n* Electromin (EV System)\n* Auto Dealerships\n* Spare Parts Dist." 
-            color="#E0E0E0" 
-            align="left" 
-            width="0.45" 
-            position="0.05 -0.41 0.01" 
-            line-height="50"
-            font="dejavu">
-          </a-text>
-
-          <!-- ACTION BUTTON (Classic Petromin Corporate Red Pill Button) -->
+          <!-- RESET SCANNER ACTION BUTTON -->
           <a-plane 
-            id="btn-close" 
+            id="btn-restart" 
             class="clickable" 
-            width="0.5" 
-            height="0.11" 
-            position="0 -0.52 0.02" 
+            width="0.8" 
+            height="0.16" 
+            position="0 -0.65 0.02" 
             material="color: #D32F2F; shader: flat"
-            ar-button-handler>
-            <a-text value="CLOSE PRESENTATION" color="#FFFFFF" align="center" width="0.75" position="0 0 0.01" font="aileron" bold="true"></a-text>
+            onclick="window.location.reload()">
+            <a-text value="COLLECT AGAIN" color="#FFFFFF" align="center" width="1.1" position="0 0 0.01" font="aileron" bold="true"></a-text>
           </a-plane>
 
         </a-plane>
       </a-entity>
+    </a-camera>
 
-    </a-entity>
-  </scene>
+    <!-- Static Ambient and Directional Lighting Rig for 3D Geometry rendering -->
+    <a-light type="ambient" color="#FFFFFF" intensity="0.8"></a-light>
+    <a-light type="directional" color="#FF6D00" intensity="0.6" position="-1 2 1"></a-light>
+
+    <!-- Dynmically Generated Collectibles Parent Entity -->
+    <a-entity id="collectibles-group"></a-entity>
+  </a-scene>
 
   <script>
-    const loadingScreen = document.getElementById('loading');
-    const scanGuide = document.getElementById('scan-guide');
-    const targetEntity = document.getElementById('ar-target');
-    const sceneEl = document.getElementById('ar-scene');
-    const errConsole = document.getElementById('error-console');
-    const info3DCard = document.getElementById('info-3d-card');
-    const interactionTip = document.getElementById('hud-interaction-tip');
-
-    // Display error stack if file compilation fails
-    function showRuntimeError(message) {
-      errConsole.style.display = 'block';
-      errConsole.innerHTML += '<strong>[System Check]:</strong> ' + message + '<br>';
-    }
-
-    // Capture global page failures
-    window.onerror = function(msg, url, line) {
-      showRuntimeError(`${msg} (line ${line})`);
-      return false;
-    };
-
-    // Auto-detect if host path is root or subfolder (GitHub Pages Repo setup)
-    function buildTargetUrl() {
-      const path = window.location.pathname;
-      const segments = path.split('/').filter(s => s !== "");
-      
-      // If deployed in a GitHub sub-repository
-      if (segments.length > 0 && !path.endsWith('.html')) {
-        return `/${segments[0]}/targets.mind`;
+    // Activate webcam background stream natively on background canvas
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        });
+        const videoEl = document.getElementById('webcam-bg');
+        videoEl.srcObject = stream;
+        
+        // Hide loader when stream is warm
+        videoEl.addEventListener('loadedmetadata', () => {
+          document.getElementById('loading').style.opacity = '0';
+          setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+          }, 500);
+        });
+      } catch (err) {
+        console.error("Camera access failed: ", err);
+        alert("Camera permission is required to showcase spatial environments in WebAR.");
       }
-      return 'targets.mind';
     }
 
-    const targetUrl = buildTargetUrl();
-    sceneEl.setAttribute('mindar-image', `imageTargetSrc: ${targetUrl}; filterMinCF:0.001; filterBeta: 10`);
-
-    // Complete loading stage once engine is online
-    sceneEl.addEventListener("arReady", () => {
-      loadingScreen.style.opacity = '0';
-      setTimeout(() => {
-        loadingScreen.style.display = 'none';
-      }, 500);
-    });
-
-    // Detect missing file or assets
-    sceneEl.addEventListener("arError", () => {
-      showRuntimeError(`Engine could not download target descriptor database at: ${window.location.origin}${targetUrl}`);
-    });
-
-    // Image target detection triggers information panel inside AR Space
-    targetEntity.addEventListener("targetFound", () => {
-      scanGuide.style.display = 'none';
-      interactionTip.style.display = 'block';
+    // Spawn 5 Oil Boxes in completely randomized vectors around the user
+    function spawnEnvironmentCollectibles() {
+      const container = document.querySelector('#collectibles-group');
       
-      // Animate card entry scaling up inside space
-      info3DCard.setAttribute('animation__show', {
-        property: 'scale',
-        to: '1 1 1',
-        dur: 600,
-        easing: 'easeOutBack'
-      });
-    });
+      for (let i = 0; i < TOTAL_BOXES; i++) {
+        // Generate random position around the central 360 sphere (radius 3 to 6 meters)
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 3.5 + Math.random() * 2.5; 
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = 0.5 + (Math.random() * 2.5); // height variance
 
-    // Reset scanner viewport when the marker tracking gets lost
-    targetEntity.addEventListener("targetLost", () => {
-      scanGuide.style.display = 'block';
-      interactionTip.style.display = 'none';
-      
-      // Reset scale state out of camera line of sight
-      info3DCard.setAttribute('scale', '0 0 0');
+        // Construct fully modular 3D A-Frame Oil Box container geometries 
+        const boxEntity = document.createElement('a-entity');
+        boxEntity.setAttribute('class', 'clickable');
+        boxEntity.setAttribute('position', `${x} ${y} ${z}`);
+        boxEntity.setAttribute('collectible-box', '');
+
+        // 3D Core Box Shape (Petromin Matte Black Canister Design)
+        const canister = document.createElement('a-box');
+        canister.setAttribute('width', '0.45');
+        canister.setAttribute('height', '0.65');
+        canister.setAttribute('depth', '0.22');
+        canister.setAttribute('material', 'color: #1A1A1A; roughness: 0.3; metalness: 0.1');
+        boxEntity.appendChild(canister);
+
+        // Bold Red Cap Lid
+        const cap = document.createElement('a-cylinder');
+        cap.setAttribute('radius', '0.07');
+        cap.setAttribute('height', '0.08');
+        cap.setAttribute('position', '0 0.34 0');
+        cap.setAttribute('material', 'color: #D32F2F');
+        boxEntity.appendChild(cap);
+
+        // Dual Corporate Branded Labels (Front and Back)
+        const frontLabel = document.createElement('a-plane');
+        frontLabel.setAttribute('width', '0.42');
+        frontLabel.setAttribute('height', '0.45');
+        frontLabel.setAttribute('position', '0 0 0.112');
+        frontLabel.setAttribute('material', 'color: #FF6D00');
+        
+        const labelText = document.createElement('a-text');
+        labelText.setAttribute('value', 'PETROMIN\n\nPREMIUM\nOIL');
+        labelText.setAttribute('color', '#FFFFFF');
+        labelText.setAttribute('align', 'center');
+        labelText.setAttribute('width', '1.1');
+        labelText.setAttribute('position', '0 0 0.01');
+        labelText.setAttribute('font', 'aileron');
+        frontLabel.appendChild(labelText);
+        
+        boxEntity.appendChild(frontLabel);
+
+        // Add automated rotation animations to make objects visually distinct
+        boxEntity.setAttribute('animation__rotate', {
+          property: 'rotation',
+          to: '0 360 0',
+          loop: true,
+          dur: 8000 + (Math.random() * 4000),
+          easing: 'linear'
+        });
+
+        boxEntity.setAttribute('animation__bobbing', {
+          property: 'position',
+          from: `${x} ${y} ${z}`,
+          to: `${x} ${y + 0.15} ${z}`,
+          loop: true,
+          dir: 'alternate',
+          dur: 1500 + (Math.random() * 1000),
+          easing: 'easeInOutQuad'
+        });
+
+        container.appendChild(boxEntity);
+      }
+    }
+
+    // Permission handler for iOS 13+ devices
+    function requestDeviceSensors() {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              document.getElementById('sensor-prompt').style.display = 'none';
+              startCamera();
+              spawnEnvironmentCollectibles();
+            } else {
+              alert("Sensor tracking denied. Gyroscope tracking is required for markerless play.");
+            }
+          })
+          .catch(console.error);
+      } else {
+        // Desktop or standard Android (non-permission restricted)
+        document.getElementById('sensor-prompt').style.display = 'none';
+        startCamera();
+        spawnEnvironmentCollectibles();
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Check if iOS permissions gate is needed
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        document.getElementById('sensor-prompt').style.display = 'flex';
+      } else {
+        startCamera();
+        spawnEnvironmentCollectibles();
+      }
     });
   </script>
 </body>
