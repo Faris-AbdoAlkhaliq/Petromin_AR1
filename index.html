@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Petromin AR Game</title>
+  <title>Petromin AR Game - Pro Edition</title>
   
   <!-- Stable A-Frame & MindAR CDN pairing -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -93,7 +93,6 @@
       border-color: #FFFFFF;
       border-style: solid;
     }
-    /* Corner HUD Borders */
     #scan-guide::before { top: -3px; left: -3px; border-width: 5px 0 0 5px; border-top-left-radius: 18px; }
     #scan-guide::after { top: -3px; right: -3px; border-width: 5px 5px 0 0; border-top-right-radius: 18px; }
     #scan-guide span::before { bottom: -3px; left: -3px; border-width: 0 0 5px 5px; border-bottom-left-radius: 18px; }
@@ -111,17 +110,17 @@
       letter-spacing: 1px;
     }
 
-    /* Brand Slide-up Modal Drawer (NOW CONTAINER FOR THE GAME) */
+    /* Game Container Overlay */
     #game-container {
       position: fixed;
       bottom: -100%;
       left: 0;
       width: 100%;
-      height: 75vh;
-      background: #111116;
+      height: 80vh;
+      background: #09090d;
       border-top-left-radius: 28px;
       border-top-right-radius: 28px;
-      box-shadow: 0 -8px 32px rgba(0,0,0,0.5);
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
       z-index: 100;
       transition: bottom 0.5s cubic-bezier(0.1, 0.76, 0.55, 0.94);
       display: flex;
@@ -136,13 +135,13 @@
     .card-handle {
       width: 36px;
       height: 5px;
-      background: #444;
+      background: #2c2c35;
       border-radius: 10px;
       margin: 12px auto 8px;
       flex-shrink: 0;
     }
 
-    /* Header for the Arcade Panel */
+    /* Header Panel */
     .game-header {
       display: flex;
       justify-content: space-between;
@@ -154,26 +153,43 @@
     .game-header h2 {
       margin: 0;
       font-size: 18px;
-      background: linear-gradient(90deg, #FF6D00, #D32F2F);
+      background: linear-gradient(90deg, #FF9100, #D32F2F);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       font-weight: 800;
       letter-spacing: 1px;
     }
 
-    .game-score-board {
+    .hud-metrics {
+      display: flex;
+      gap: 15px;
       font-family: monospace;
-      font-size: 16px;
-      color: #00FFCC;
-      text-shadow: 0 0 5px rgba(0, 255, 210, 0.5);
+      font-size: 14px;
+      align-items: center;
     }
 
-    /* The actual 2D Canvas container */
+    .metric-box {
+      background: #151520;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #2a2a3a;
+    }
+
+    #score-text {
+      color: #00FFCC;
+      text-shadow: 0 0 5px rgba(0, 255, 210, 0.3);
+    }
+
+    #speed-text {
+      color: #FFD54F;
+    }
+
+    /* Canvas wrappers and UI menus */
     .canvas-wrapper {
       position: relative;
       flex-grow: 1;
       width: 100%;
-      background: #0d0d11;
+      background: #050508;
     }
 
     #gameCanvas {
@@ -182,14 +198,13 @@
       height: 100%;
     }
 
-    /* Mobile virtual control overlays and overlays for game states */
     .game-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(4, 4, 6, 0.92);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -197,29 +212,64 @@
       color: white;
       z-index: 105;
       text-align: center;
-      padding: 20px;
+      padding: 24px;
       box-sizing: border-box;
+    }
+
+    .game-overlay h3 {
+      margin: 0;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    .game-overlay p {
+      line-height: 1.6;
     }
 
     .game-overlay button {
       background: linear-gradient(90deg, #D32F2F, #FF6D00);
       color: white;
       border: none;
-      padding: 12px 30px;
-      border-radius: 25px;
-      font-size: 16px;
+      padding: 14px 35px;
+      border-radius: 30px;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 15px;
+      margin-top: 20px;
       box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: transform 0.1s ease;
+    }
+
+    .game-overlay button:active {
+      transform: scale(0.96);
     }
 
     .scanner-exit-btn {
       background: transparent !important;
-      border: 1.5px solid #FF6D00 !important;
+      border: 2px solid #FF6D00 !important;
       color: #FF6D00 !important;
       box-shadow: none !important;
-      margin-top: 10px !important;
+      margin-top: 12px !important;
+    }
+
+    /* Legend/How-to visual elements in starting overlay */
+    .legend-box {
+      display: flex;
+      gap: 15px;
+      margin: 15px 0;
+      background: rgba(255,255,255,0.04);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px;
+      text-align: left;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
   </style>
 </head>
@@ -246,23 +296,44 @@
     <div class="card-handle"></div>
     <div class="game-header">
       <h2>PETROMIN RUN</h2>
-      <div class="game-score-board" id="score-text">SCORE: 00</div>
+      <div class="hud-metrics">
+        <div class="metric-box" id="speed-text">100 KM/H</div>
+        <div class="metric-box" id="score-text">SCORE: 00</div>
+      </div>
     </div>
 
     <div class="canvas-wrapper">
       <canvas id="gameCanvas"></canvas>
       
-      <!-- Start/Game Over Overlay screens within the console -->
+      <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
-        <h3 style="margin: 0; font-size: 24px; color: #FF6D00;">PETROLUBE CHASE</h3>
-        <p style="font-size: 13px; color: #ccc; margin-top: 8px;">Drag your Petromin truck left & right.<br>Collect Oil Drops but avoid Spanners!</p>
-        <button onclick="startGame()">TAP TO PLAY</button>
+        <h3 style="font-size: 26px; color: #FF6D00; margin-bottom: 5px;">PETROLUBE PRO CHALLENGE</h3>
+        <p style="font-size: 12px; color: #aaa; margin: 0 0 10px;">Drag your Truck left & right. The highway gets faster every second!</p>
+        
+        <div class="legend-box">
+          <div class="legend-item">
+            <span style="display:inline-block; width:10px; height:10px; background:#FF9100; border-radius:50%;"></span>
+            <span>Oil (+10 pts)</span>
+          </div>
+          <div class="legend-item">
+            <span style="display:inline-block; width:10px; height:10px; background:#00E676; border-radius:2px;"></span>
+            <span>Fuel (Keep Moving)</span>
+          </div>
+          <div class="legend-item">
+            <span style="display:inline-block; width:10px; height:10px; background:#FF1744; transform:rotate(45deg);"></span>
+            <span>Wrench (Danger)</span>
+          </div>
+        </div>
+
+        <button onclick="startGame()">START HIGHWAY</button>
       </div>
 
+      <!-- Game Over Overlay -->
       <div id="gameover-overlay" class="game-overlay" style="display: none;">
-        <h3 style="margin: 0; font-size: 28px; color: #D32F2F;">GAME OVER</h3>
-        <p id="final-score-text" style="font-size: 16px; margin: 10px 0;">Final Score: 0</p>
-        <button onclick="startGame()">PLAY AGAIN</button>
+        <h3 style="font-size: 28px; color: #D32F2F;">VEHICLE CRASHED</h3>
+        <p id="final-score-text" style="font-size: 16px; margin: 8px 0; color: #00FFCC;">Final Score: 0</p>
+        <p id="game-over-reason" style="font-size: 12px; color: #aaa; max-width: 250px; margin-bottom: 10px;"></p>
+        <button onclick="startGame()">RETRY RUN</button>
         <button class="scanner-exit-btn" onclick="resetScanner()">SCAN ANOTHER LOGO</button>
       </div>
     </div>
@@ -334,7 +405,6 @@
     targetEntity.addEventListener("targetFound", () => {
       gameContainer.classList.add('active');
       scanGuide.style.display = 'none';
-      // Auto-resize game canvas when revealed
       initCanvas();
     });
 
@@ -347,56 +417,69 @@
       }, 300);
     }
 
-    // ==========================================
-    //            2D CANVAS ARCADE GAME
-    // ==========================================
+    // ==========================================================
+    //            UPGRADED 2D CANVAS ARCADE GAME (PRO EDITION)
+    // ==========================================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const startOverlay = document.getElementById('start-overlay');
     const gameoverOverlay = document.getElementById('gameover-overlay');
     const scoreText = document.getElementById('score-text');
+    const speedText = document.getElementById('speed-text');
     const finalScoreText = document.getElementById('final-score-text');
+    const gameOverReason = document.getElementById('game-over-reason');
 
     let gameActive = false;
     let score = 0;
     let lives = 3;
+    let fuel = 100; // Max 100
+    let gameSpeedMultiplier = 1; // Increases over time to scale challenge
     let animationId = null;
 
-    // Player (Truck) state
+    // Player State
     const player = {
       x: 0,
       y: 0,
-      width: 55,
-      height: 35,
-      speed: 15
+      width: 58,
+      height: 38,
+      targetX: 0, // for smoothed lerping movement
     };
 
     let items = [];
-    let spawnRate = 40; // frames between spawns
+    let particles = [];
+    let roadStripes = [];
     let frameCount = 0;
+    let spawnRate = 35; // base frames between spawns
 
     function initCanvas() {
       const rect = canvas.parentElement.getBoundingClientRect();
       canvas.width = rect.width;
       canvas.height = rect.height;
       player.x = canvas.width / 2 - player.width / 2;
-      player.y = canvas.height - player.height - 15;
+      player.targetX = player.x;
+      player.y = canvas.height - player.height - 25;
+
+      // Pre-populate road stripes
+      roadStripes = [];
+      for (let y = -40; y < canvas.height; y += 80) {
+        roadStripes.push({ y: y });
+      }
     }
 
-    // Touch and Drag controls
+    // Capture Drag & Touch
     let isDragging = false;
-    canvas.addEventListener('mousedown', (e) => { isDragging = true; movePlayer(e); });
-    canvas.addEventListener('mousemove', (e) => { if (isDragging) movePlayer(e); });
+    canvas.addEventListener('mousedown', (e) => { isDragging = true; trackInput(e); });
+    canvas.addEventListener('mousemove', (e) => { if (isDragging) trackInput(e); });
     window.addEventListener('mouseup', () => { isDragging = false; });
 
-    canvas.addEventListener('touchstart', (e) => { isDragging = true; movePlayer(e.touches[0]); });
-    canvas.addEventListener('touchmove', (e) => { if (isDragging) movePlayer(e.touches[0]); e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchstart', (e) => { isDragging = true; trackInput(e.touches[0]); });
+    canvas.addEventListener('touchmove', (e) => { if (isDragging) trackInput(e.touches[0]); e.preventDefault(); }, { passive: false });
     window.addEventListener('touchend', () => { isDragging = false; });
 
-    function movePlayer(input) {
+    function trackInput(input) {
       const rect = canvas.getBoundingClientRect();
       const relativeX = input.clientX - rect.left;
-      player.x = Math.max(0, Math.min(canvas.width - player.width, relativeX - player.width / 2));
+      player.targetX = Math.max(0, Math.min(canvas.width - player.width, relativeX - player.width / 2));
     }
 
     function startGame() {
@@ -406,7 +489,10 @@
       
       score = 0;
       lives = 3;
+      fuel = 100;
+      gameSpeedMultiplier = 1;
       items = [];
+      particles = [];
       gameActive = true;
       scoreText.innerText = `SCORE: 00`;
       
@@ -419,88 +505,203 @@
       if(animationId) cancelAnimationFrame(animationId);
     }
 
-    function gameOver() {
+    function gameOver(reason) {
       gameActive = false;
       finalScoreText.innerText = `Final Score: ${score}`;
+      gameOverReason.innerText = reason;
       gameoverOverlay.style.display = 'flex';
     }
 
+    function spawnParticleBurst(x, y, color, count = 8) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6,
+          radius: 2 + Math.random() * 3,
+          color: color,
+          alpha: 1,
+          decay: 0.02 + Math.random() * 0.03
+        });
+      }
+    }
+
     function spawnItem() {
-      const types = ['oil', 'oil', 'obstacle']; // 66% chance of oil, 33% hazard
+      const types = ['oil', 'oil', 'fuel', 'obstacle', 'obstacle'];
       const type = types[Math.floor(Math.random() * types.length)];
       
       items.push({
-        x: Math.random() * (canvas.width - 24),
-        y: -30,
-        size: 24,
+        x: 15 + Math.random() * (canvas.width - 45),
+        y: -40,
+        size: 26,
         type: type,
-        speed: 3 + Math.random() * 4
+        speed: (2.5 + Math.random() * 3) * gameSpeedMultiplier,
+        rotation: 0,
+        rotSpeed: (Math.random() - 0.5) * 0.05
       });
+    }
+
+    function triggerScreenShake() {
+      gameContainer.style.animation = 'none';
+      setTimeout(() => gameContainer.style.animation = 'shake 0.35s cubic-bezier(.36,.07,.19,.97) both', 1);
     }
 
     function gameLoop() {
       if (!gameActive) return;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw road decoration stripes
-      ctx.fillStyle = '#1e1e24';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#333';
-      for(let y = 0; y < canvas.height; y += 40) {
-        ctx.fillRect(canvas.width / 2 - 4, y, 8, 20);
+      // 1. Physics scaling updates
+      gameSpeedMultiplier += 0.0002; // gradual acceleration
+      const speedKmh = Math.floor(100 * gameSpeedMultiplier);
+      speedText.innerText = `${speedKmh} KM/H`;
+
+      // Slow depletion of fuel
+      fuel -= 0.08 * gameSpeedMultiplier;
+      if (fuel <= 0) {
+        gameOver("Your engine sputtered out of fuel! Pick up fuel canisters.");
+        return;
       }
 
-      // Draw player truck (Styled like a Petromin Quick Lube van)
-      // Truck bed
-      ctx.fillStyle = '#D32F2F'; // Petromin corporate red
-      ctx.fillRect(player.x, player.y + 10, player.width - 15, player.height - 10);
-      // Truck cabin
-      ctx.fillStyle = '#FF6D00'; // Petromin Orange
-      ctx.fillRect(player.x + player.width - 15, player.y + 12, 15, player.height - 12);
-      // Truck windshield
-      ctx.fillStyle = '#E0F7FA';
-      ctx.fillRect(player.x + player.width - 6, player.y + 14, 5, 8);
-      // White Stripe accent
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(player.x + 5, player.y + 17, player.width - 20, 3);
-      // Wheels
-      ctx.fillStyle = '#111';
+      // Smooth horizontal truck movement (Interpolation)
+      player.x += (player.targetX - player.x) * 0.22;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw modern asphalt roadway backdrop
+      ctx.fillStyle = '#111116';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Left/Right road shoulder guardrails
+      ctx.fillStyle = '#D32F2F'; // Red outline
+      ctx.fillRect(0, 0, 8, canvas.height);
+      ctx.fillRect(canvas.width - 8, 0, 8, canvas.height);
+
+      // Draw moving center lines
+      ctx.fillStyle = '#444455';
+      roadStripes.forEach(stripe => {
+        stripe.y += 4 * gameSpeedMultiplier;
+        if (stripe.y > canvas.height) stripe.y = -60;
+        ctx.fillRect(canvas.width / 2 - 3, stripe.y, 6, 35);
+      });
+
+      // 2. Spawn exhaust engine fumes behind truck
+      if (Math.random() < 0.3) {
+        particles.push({
+          x: player.x + 10,
+          y: player.y + player.height,
+          vx: -0.5 - Math.random() * 1,
+          vy: 1 + Math.random() * 2,
+          radius: 3 + Math.random() * 4,
+          color: 'rgba(255, 255, 255, 0.15)',
+          alpha: 0.6,
+          decay: 0.02
+        });
+      }
+
+      // 3. Draw & process particles
+      for (let p = particles.length - 1; p >= 0; p--) {
+        const prt = particles[p];
+        prt.x += prt.vx;
+        prt.y += prt.vy;
+        prt.alpha -= prt.decay;
+        if (prt.alpha <= 0) {
+          particles.splice(p, 1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = prt.alpha;
+        ctx.fillStyle = prt.color;
+        ctx.beginPath();
+        ctx.arc(prt.x, prt.y, prt.radius, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // 4. Draw detailed Petromin express service truck
+      ctx.save();
+      
+      // Wheels (Animated)
+      ctx.fillStyle = '#08080a';
+      // Front wheel
+      ctx.fillRect(player.x + 8, player.y + player.height - 3, 10, 6);
+      // Rear wheel
+      ctx.fillRect(player.x + player.width - 18, player.y + player.height - 3, 10, 6);
+
+      // Main Truck Red Bed
+      ctx.fillStyle = '#D32F2F';
       ctx.beginPath();
-      ctx.arc(player.x + 12, player.y + player.height, 7, 0, Math.PI * 2);
-      ctx.arc(player.x + player.width - 12, player.y + player.height, 7, 0, Math.PI * 2);
+      ctx.roundRect(player.x + 2, player.y + 6, player.width - 18, player.height - 10, 4);
       ctx.fill();
 
-      // Manage and Draw Items
+      // Front Cab (Orange nose)
+      ctx.fillStyle = '#FF6D00';
+      ctx.beginPath();
+      ctx.roundRect(player.x + player.width - 18, player.y + 10, 16, player.height - 14, 4);
+      ctx.fill();
+
+      // Corporate decals (Stylized white swoosh graphic)
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.moveTo(player.x + 6, player.y + 16);
+      ctx.lineTo(player.x + player.width - 24, player.y + 16);
+      ctx.lineTo(player.x + player.width - 20, player.y + 21);
+      ctx.lineTo(player.x + 10, player.y + 21);
+      ctx.closePath();
+      ctx.fill();
+
+      // Cabin windshield & windows
+      ctx.fillStyle = '#80DEEA';
+      ctx.fillRect(player.x + player.width - 12, player.y + 12, 8, 7);
+
+      // Yellow Headlights glow beam
+      const pulseBeam = 15 + Math.sin(frameCount * 0.1) * 5;
+      const gradient = ctx.createLinearGradient(player.x + player.width - 2, player.y + 22, player.x + player.width + pulseBeam, player.y + 22);
+      gradient.addColorStop(0, 'rgba(255, 235, 59, 0.6)');
+      gradient.addColorStop(1, 'rgba(255, 235, 59, 0)');
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.moveTo(player.x + player.width - 2, player.y + 20);
+      ctx.lineTo(player.x + player.width + pulseBeam, player.y + 12);
+      ctx.lineTo(player.x + player.width + pulseBeam, player.y + 30);
+      ctx.lineTo(player.x + player.width - 2, player.y + 24);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+
+      // 5. Falling items rendering
       frameCount++;
-      if (frameCount % spawnRate === 0) {
+      const speedAdjustedSpawn = Math.max(12, Math.floor(spawnRate / gameSpeedMultiplier));
+      if (frameCount % speedAdjustedSpawn === 0) {
         spawnItem();
-        // Speed up spawn rate gradually as points are gained
-        if(spawnRate > 15 && score % 50 === 0) spawnRate--; 
       }
 
       for (let i = items.length - 1; i >= 0; i--) {
         const item = items[i];
         item.y += item.speed;
+        item.rotation += item.rotSpeed;
 
-        // Collision Check
+        // Bounding calculation box
         if (
           item.x < player.x + player.width &&
           item.x + item.size > player.x &&
           item.y < player.y + player.height &&
           item.y + item.size > player.y
         ) {
-          // Trigger impact logic
+          // Impact Event
           if (item.type === 'oil') {
             score += 10;
             scoreText.innerText = `SCORE: ${score}`;
-          } else {
+            spawnParticleBurst(item.x + item.size/2, item.y + item.size/2, '#FF9100', 8);
+          } else if (item.type === 'fuel') {
+            fuel = Math.min(100, fuel + 25);
+            spawnParticleBurst(item.x + item.size/2, item.y + item.size/2, '#00E676', 12);
+          } else if (item.type === 'obstacle') {
             lives--;
-            // Shake visual indicator
-            gameContainer.style.animation = 'none';
-            setTimeout(() => gameContainer.style.animation = 'shake 0.3s', 1);
+            spawnParticleBurst(item.x + item.size/2, item.y + item.size/2, '#FF1744', 15);
+            triggerScreenShake();
             if (lives <= 0) {
-              gameOver();
+              gameOver("Your utility truck sustained critical structural damage!");
               return;
             }
           }
@@ -508,51 +709,109 @@
           continue;
         }
 
-        // Off-screen check
+        // Drop if past screen bounds
         if (item.y > canvas.height) {
           items.splice(i, 1);
           continue;
         }
 
-        // Draw Items
+        // Draw items with rotation matrix 
+        ctx.save();
+        ctx.translate(item.x + item.size / 2, item.y + item.size / 2);
+        ctx.rotate(item.rotation);
+
         if (item.type === 'oil') {
-          // Draw bright Orange/Yellow droplet
+          // Glow Backplate
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = '#FF9100';
+          // Oil Droplet detailed path
           ctx.fillStyle = '#FF9100';
           ctx.beginPath();
-          ctx.moveTo(item.x + item.size/2, item.y);
-          ctx.quadraticCurveTo(item.x + item.size, item.y + item.size, item.x + item.size/2, item.y + item.size);
-          ctx.quadraticCurveTo(item.x, item.y + item.size, item.x + item.size/2, item.y);
+          ctx.moveTo(0, -item.size / 2);
+          ctx.bezierCurveTo(item.size / 2, 0, item.size / 2, item.size / 2, 0, item.size / 2);
+          ctx.bezierCurveTo(-item.size / 2, item.size / 2, -item.size / 2, 0, 0, -item.size / 2);
+          ctx.closePath();
           ctx.fill();
-        } else {
-          // Draw metallic Spanner wrench obstacle
-          ctx.fillStyle = '#B0BEC5';
-          ctx.fillRect(item.x + item.size/2 - 3, item.y, 6, item.size);
+          // Inner core highlights
+          ctx.fillStyle = '#FFE082';
           ctx.beginPath();
-          ctx.arc(item.x + item.size/2, item.y + 3, 7, 0, Math.PI * 2);
-          ctx.arc(item.x + item.size/2, item.y + item.size - 3, 7, 0, Math.PI * 2);
+          ctx.arc(-2, 2, 3, 0, Math.PI*2);
           ctx.fill();
+        } 
+        else if (item.type === 'fuel') {
+          // Green Fuel canister canister
+          ctx.shadowBlur = 8;
+          ctx.shadowColor = '#00E676';
+          ctx.fillStyle = '#00E676';
+          // Body
+          ctx.fillRect(-item.size/3, -item.size/3, (item.size/3)*2, (item.size/3)*2);
+          // Handle
+          ctx.fillStyle = '#00B0FF';
+          ctx.fillRect(-item.size/4, -item.size/2, item.size/2, 4);
+          // Lettering F
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 9px Arial';
+          ctx.fillText("F", -3, 3);
+        } 
+        else {
+          // Obstacle metal wrench with dangerous pulsing red shadow
+          ctx.shadowBlur = 6;
+          ctx.shadowColor = '#FF1744';
+          ctx.fillStyle = '#90A4AE';
+          // Shaft
+          ctx.fillRect(-3, -item.size/2 + 2, 6, item.size - 4);
+          // Two jaws ends
+          ctx.beginPath();
+          ctx.arc(0, -item.size/2 + 3, 6, 0, Math.PI*2);
+          ctx.arc(0, item.size/2 - 3, 6, 0, Math.PI*2);
+          ctx.fill();
+          // Jaw cutout detail
+          ctx.fillStyle = '#111116';
+          ctx.fillRect(-2, -item.size/2, 4, 3);
+          ctx.fillRect(-2, item.size/2 - 3, 4, 3);
         }
+        ctx.restore();
       }
 
-      // Draw active remaining Lives (little red stars/bars)
+      // 6. Top UI Overlay Metrics (Fuel indicators & Remaining hearts)
+      // Draw Dashboard Bar Backdrop
+      ctx.fillStyle = 'rgba(20, 20, 30, 0.7)';
+      ctx.beginPath();
+      ctx.roundRect(15, 12, 105, 30, 8);
+      ctx.fill();
+
+      // Active Remaining Hearts
       for (let l = 0; l < 3; l++) {
-        ctx.fillStyle = l < lives ? '#D32F2F' : '#333';
-        ctx.fillRect(15 + l * 18, 15, 12, 12);
+        ctx.fillStyle = l < lives ? '#FF1744' : '#263238';
+        // Heart drawing vector shape
+        ctx.beginPath();
+        const hx = 24 + l * 18;
+        const hy = 20;
+        ctx.arc(hx - 3, hy, 3, 0, Math.PI, true);
+        ctx.arc(hx + 3, hy, 3, 0, Math.PI, true);
+        ctx.lineTo(hx, hy + 7);
+        ctx.closePath();
+        ctx.fill();
       }
+
+      // Fuel Progress Bar
+      ctx.fillStyle = '#37474F';
+      ctx.fillRect(24, 32, 80, 5);
+      const fuelColor = fuel > 40 ? '#00E676' : '#FF1744';
+      ctx.fillStyle = fuelColor;
+      ctx.fillRect(24, 32, 80 * (fuel / 100), 5);
 
       animationId = requestAnimationFrame(gameLoop);
     }
   </script>
 
-  <!-- Shake Animation CSS Inject -->
+  <!-- High performance CSS transitions -->
   <style>
     @keyframes shake {
-      0% { transform: translate(0, 0); }
-      20% { transform: translate(-8px, 0); }
-      40% { transform: translate(6px, 0); }
-      60% { transform: translate(-4px, 0); }
-      80% { transform: translate(2px, 0); }
-      100% { transform: translate(0, 0); }
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
     }
   </style>
 </body>
