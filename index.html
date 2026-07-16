@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Petromin AR - Pipeline Classic</title>
   
   <!-- Stable A-Frame & MindAR CDN pairing -->
@@ -10,12 +10,21 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
+    /* Prevent rubber-banding or text selection highlighting on fast taps */
+    * {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
     body {
       margin: 0;
       overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       background-color: #000;
       -webkit-tap-highlight-color: transparent;
+      touch-action: none;
     }
 
     /* Loading Screen */
@@ -32,9 +41,8 @@
       align-items: center;
       z-index: 9999;
       color: white;
-      transition: opacity 0.5s ease;
+      transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
       padding: 20px;
-      box-sizing: border-box;
       text-align: center;
     }
 
@@ -116,16 +124,17 @@
       bottom: -100%;
       left: 0;
       width: 100%;
-      height: 80vh;
+      height: 85vh; /* Taller viewport container for easier control on modern screens */
       background: #09090d;
       border-top-left-radius: 28px;
       border-top-right-radius: 28px;
       box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
       z-index: 100;
-      transition: bottom 0.5s cubic-bezier(0.1, 0.76, 0.55, 0.94);
+      transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Faster drawer transition */
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     #game-container.active {
@@ -188,16 +197,19 @@
       background: #050508;
       display: flex;
       flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
     #gameCanvas {
       display: block;
-      width: 100%;
-      flex-grow: 1;
+      max-width: 100%;
+      max-height: 100%;
     }
 
     /* Mobile Joystick Controller Container */
     #controls-container {
+      width: 100%;
       height: 160px;
       background: #0c0c14;
       border-top: 1px solid #1a1a26;
@@ -210,8 +222,8 @@
 
     /* Joystick Outer Ring Stylings */
     #joystick-boundary {
-      width: 120px;
-      height: 120px;
+      width: 110px;
+      height: 110px;
       background: radial-gradient(circle, #151524 0%, #0d0d16 100%);
       border: 3px solid #1c1c2e;
       border-radius: 50%;
@@ -223,13 +235,12 @@
       touch-action: none;
     }
 
-    /* Four tiny directional pointers inside the boundary */
     #joystick-boundary::before, #joystick-boundary::after {
       content: '';
       position: absolute;
       background: #2a2a3e;
+      pointer-events: none;
     }
-    /* Horizontal indicator dots/ticks */
     #joystick-boundary::before {
       width: 80%;
       height: 2px;
@@ -238,7 +249,6 @@
       transform: translateY(-50%);
       background: linear-gradient(90deg, #33334d 0%, transparent 20%, transparent 80%, #33334d 100%);
     }
-    /* Vertical indicator dots/ticks */
     #joystick-boundary::after {
       width: 2px;
       height: 80%;
@@ -250,20 +260,18 @@
 
     /* Joystick Inner Thumb Stick */
     #joystick-stick {
-      width: 50px;
-      height: 50px;
+      width: 46px;
+      height: 46px;
       background: radial-gradient(circle, #ff7b00 0%, #e64a19 100%);
       border-radius: 50%;
       position: absolute;
-      cursor: grab;
       touch-action: none;
       box-shadow: 0 4px 10px rgba(230, 74, 25, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4);
-      transition: transform 0.05s ease-out;
+      will-change: transform;
       z-index: 2;
     }
 
     #joystick-stick:active {
-      cursor: grabbing;
       background: radial-gradient(circle, #ff9100 0%, #ff3d00 100%);
       box-shadow: 0 0 20px rgba(255, 61, 0, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.6);
     }
@@ -283,7 +291,6 @@
       z-index: 105;
       text-align: center;
       padding: 24px;
-      box-sizing: border-box;
     }
 
     .game-overlay h3 {
@@ -313,7 +320,7 @@
     }
 
     .game-overlay button:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
     }
 
     .legend-box {
@@ -352,7 +359,7 @@
     <div id="scan-text">ALIGN WITH PETROMIN LOGO</div>
   </div>
 
-  <!-- Interactive 2D Game Drawer[cite: 2] -->
+  <!-- Interactive 2D Game Drawer -->
   <div id="game-container">
     <div class="card-handle"></div>
     <div class="game-header">
@@ -365,17 +372,17 @@
     <div class="canvas-wrapper">
       <canvas id="gameCanvas"></canvas>
       
-      <!-- Interactive Joystick Controls (Replaced original D-Pad)[cite: 2] -->
+      <!-- Interactive Joystick Controls -->
       <div id="controls-container">
         <div id="joystick-boundary">
           <div id="joystick-stick"></div>
         </div>
       </div>
 
-      <!-- Start Overlay[cite: 2] -->
+      <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
         <h3 style="font-size: 26px; color: #FF6D00; margin-bottom: 5px;">PETROMIN PIPELINE</h3>
-        <p style="font-size: 12px; color: #aaa; margin: 0 0 10px;">The classic Snake game, built for oil flow! Connect pipeline segments using the joystick below.</p>
+        <p style="font-size: 12px; color: #aaa; margin: 0 0 10px;">Connect pipeline segments using the joystick below.</p>
         
         <div class="legend-box">
           <div class="legend-item">
@@ -391,7 +398,7 @@
         <button onclick="startGame()">START FLOW</button>
       </div>
 
-      <!-- Game Over Overlay[cite: 2] -->
+      <!-- Game Over Overlay -->
       <div id="gameover-overlay" class="game-overlay" style="display: none;">
         <h3 style="font-size: 28px; color: #D32F2F;">PIPELINE LEAK!</h3>
         <p id="final-score-text" style="font-size: 16px; margin: 8px 0; color: #00FFCC;">Total Flow: 0 Liters</p>
@@ -401,7 +408,7 @@
     </div>
   </div>
 
-  <!-- AR Scene[cite: 2] -->
+  <!-- AR Scene -->
   <a-scene 
     id="ar-scene"
     color-space="sRGB" 
@@ -411,7 +418,7 @@
     
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-    <!-- Index 0 corresponds to the compiled logo marker inside targets.mind[cite: 2] -->
+    <!-- Index 0 corresponds to the compiled logo marker inside targets.mind -->
     <a-entity id="ar-target" mindar-image-target="targetIndex: 0"></a-entity>
   </scene>
 
@@ -453,7 +460,7 @@
       loadingScreen.style.opacity = '0';
       setTimeout(() => {
         loadingScreen.style.display = 'none';
-      }, 500);
+      }, 400);
     });
 
     sceneEl.addEventListener("arError", () => {
@@ -464,11 +471,11 @@
     targetEntity.addEventListener("targetFound", () => {
       gameContainer.classList.add('active');
       scanGuide.style.display = 'none';
-      initCanvas();
+      setTimeout(initCanvas, 400); // Wait for transition animation to end
     });
 
     // ==========================================================
-    //       PETROMIN PIPELINE (CLASSIC RETRO SNAKE RESKIN)[cite: 2]
+    //       PETROMIN PIPELINE (CLASSIC RETRO SNAKE RESKIN)
     // ==========================================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -478,8 +485,8 @@
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
 
-    // Grid details[cite: 2]
-    const gridSize = 20; // 20x20 Grid[cite: 2]
+    // Grid details
+    const gridSize = 20; // 20x20 Grid
     let tileCountX = 0;
     let tileCountY = 0;
     let gridCellWidth = 0;
@@ -488,8 +495,9 @@
     let pipeline = [];
     let dx = 1; // current X velocity
     let dy = 0; // current Y velocity
-    let nextDx = 1;
-    let nextDy = 0;
+    
+    // Buffer next direct movements to prevent illegal self-reversing inputs
+    let inputQueue = [];
 
     let oilDrop = { x: 0, y: 0, special: false };
     let score = 0;
@@ -499,30 +507,50 @@
     let currentSpeed = baseSpeed;
 
     function initCanvas() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-      // Keep canvas square-focused for reliable retro grid sizing[cite: 2]
-      const size = Math.min(rect.width, rect.height - 10);
+      const wrapper = canvas.parentElement;
+      const rect = wrapper.getBoundingClientRect();
+      const margin = 16;
+      const size = Math.min(rect.width - margin, rect.height - margin);
+      
       canvas.width = size;
       canvas.height = size;
 
       tileCountX = gridSize;
       tileCountY = gridSize;
-      gridCellWidth = canvas.width / tileCountX;
-      gridCellHeight = canvas.height / tileCountY;
+      gridCellWidth = size / tileCountX;
+      gridCellHeight = size / tileCountY;
+
+      if (gameActive) {
+        drawGame();
+      }
     }
 
-    // Direction handlers[cite: 2]
+    // Dynamic resize listener to handle transitions, rotations, and folding screens
+    window.addEventListener('resize', () => {
+      if (gameContainer.classList.contains('active')) {
+        requestAnimationFrame(initCanvas);
+      }
+    });
+
+    // Highly responsive queued direction setting
     function setDirection(newDx, newDy) {
       if (!gameActive) return;
-      // Prevent reversing into oneself[cite: 2]
-      if ((newDx === -1 && dx === 1) || (newDx === 1 && dx === -1)) return;
-      if ((newDy === -1 && dy === 1) || (newDy === 1 && dy === -1)) return;
-      nextDx = newDx;
-      nextDy = newDy;
+      
+      // Get the last requested movement direction (or fallback to active state)
+      const lastMove = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : { dx: dx, dy: dy };
+
+      // Prevent opposite action inputs entirely
+      if ((newDx === -1 && lastMove.dx === 1) || (newDx === 1 && lastMove.dx === -1)) return;
+      if ((newDy === -1 && lastMove.dy === 1) || (newDy === 1 && lastMove.dy === -1)) return;
+
+      // Limit buffer depth to keep controls feeling accurate and predictable
+      if (inputQueue.length < 2) {
+        inputQueue.push({ dx: newDx, dy: newDy });
+      }
     }
 
     // ==========================================================
-    //            DYNAMIC VIRTUAL JOYSTICK PHYSICS[cite: 2]
+    //            DYNAMIC VIRTUAL JOYSTICK PHYSICS
     // ==========================================================
     const joystickBoundary = document.getElementById('joystick-boundary');
     const joystickStick = document.getElementById('joystick-stick');
@@ -530,14 +558,17 @@
     let isDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
-    const maxDistance = 45; // Max radius distance the stick can travel inside the bounds
+    const maxDistance = 40; // Clamped radius boundary
+    const deadzone = 12; // Minimum movement required before registers input
 
     function handleStart(clientX, clientY) {
       isDragging = true;
       const rect = joystickBoundary.getBoundingClientRect();
-      // Lock origin points to center of the boundary circle
       dragStartX = rect.left + rect.width / 2;
       dragStartY = rect.top + rect.height / 2;
+      
+      // Clear visual delay scaling
+      joystickStick.style.transition = 'none';
     }
 
     function handleMove(clientX, clientY) {
@@ -550,17 +581,15 @@
       let targetX = deltaX;
       let targetY = deltaY;
 
-      // Restrict joystick visual movement to maximum radius boundary
       if (distance > maxDistance) {
         targetX = (deltaX / distance) * maxDistance;
         targetY = (deltaY / distance) * maxDistance;
       }
 
-      // Visually update the joystick position using efficient transform
-      joystickStick.style.transform = `translate(${targetX}px, ${targetY}px)`;
+      // Hardware accelerated position updates
+      joystickStick.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
 
-      // Convert coordinate offsets into immediate pipeline cardinal directions
-      if (distance > 15) { // Active deadzone padding
+      if (distance > deadzone) {
         if (Math.abs(targetX) > Math.abs(targetY)) {
           setDirection(targetX > 0 ? 1 : -1, 0);
         } else {
@@ -570,15 +599,18 @@
     }
 
     function handleEnd() {
+      if (!isDragging) return;
       isDragging = false;
-      // Reset thumb back to center when released
-      joystickStick.style.transform = 'translate(0px, 0px)';
+      // Smooth visual spring return
+      joystickStick.style.transition = 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)';
+      joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     }
 
-    // Touch Support
+    // Highly Responsive Mobile Touch Triggers (bypass 300ms tap lags completely)
     joystickBoundary.addEventListener('touchstart', (e) => {
+      e.preventDefault();
       handleStart(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
+    }, { passive: false });
 
     window.addEventListener('touchmove', (e) => {
       if (isDragging) {
@@ -586,9 +618,9 @@
       }
     }, { passive: true });
 
-    window.addEventListener('touchend', handleEnd);
+    window.addEventListener('touchend', handleEnd, { passive: true });
 
-    // Mouse Support for Desktop testing
+    // Desktop mouse behaviors
     joystickBoundary.addEventListener('mousedown', (e) => {
       handleStart(e.clientX, e.clientY);
     });
@@ -601,14 +633,13 @@
 
     window.addEventListener('mouseup', handleEnd);
 
-
-    // Support Keyboard arrows for desktop testing[cite: 2]
+    // Support Keyboard arrows for desktop testing
     window.addEventListener('keydown', (e) => {
       switch(e.key) {
-        case 'ArrowUp': setDirection(0, -1); break;
-        case 'ArrowDown': setDirection(0, 1); break;
-        case 'ArrowLeft': setDirection(-1, 0); break;
-        case 'ArrowRight': setDirection(1, 0); break;
+        case 'ArrowUp': case 'w': case 'W': setDirection(0, -1); break;
+        case 'ArrowDown': case 's': case 'S': setDirection(0, 1); break;
+        case 'ArrowLeft': case 'a': case 'A': setDirection(-1, 0); break;
+        case 'ArrowRight': case 'd': case 'D': setDirection(1, 0); break;
       }
     });
 
@@ -618,12 +649,11 @@
       while(!valid) {
         rx = Math.floor(Math.random() * tileCountX);
         ry = Math.floor(Math.random() * tileCountY);
-        // Ensure food does not spawn inside the current pipeline[cite: 2]
         valid = !pipeline.some(segment => segment.x === rx && segment.y === ry);
       }
       oilDrop.x = rx;
       oilDrop.y = ry;
-      oilDrop.special = Math.random() < 0.25; // 25% chance of premium high speed value drop[cite: 2]
+      oilDrop.special = Math.random() < 0.25; // 25% chance of premium high speed value drop
     }
 
     function startGame() {
@@ -634,11 +664,10 @@
       score = 0;
       dx = 1;
       dy = 0;
-      nextDx = 1;
-      nextDy = 0;
+      inputQueue = [];
       currentSpeed = baseSpeed;
 
-      // Start in middle, length of 3 segments[cite: 2]
+      // Start in middle, length of 3 segments
       pipeline = [
         { x: 5, y: 10 },
         { x: 4, y: 10 },
@@ -649,7 +678,7 @@
       gameActive = true;
       scoreText.innerText = `FLOW: 0 L`;
 
-      if (gameInterval) clearInterval(gameInterval);
+      if (gameInterval) clearTimeout(gameInterval);
       runLoop();
     }
 
@@ -663,40 +692,43 @@
     }
 
     function updateGame() {
-      dx = nextDx;
-      dy = nextDy;
+      // Dequeue next action direction instantly on cycle
+      if (inputQueue.length > 0) {
+        const nextMove = inputQueue.shift();
+        dx = nextMove.dx;
+        dy = nextMove.dy;
+      }
 
-      // Calculate new head coordinates[cite: 2]
+      // Calculate new head coordinates
       const head = { x: pipeline[0].x + dx, y: pipeline[0].y + dy };
 
-      // Wall Collision Check[cite: 2]
+      // Wall Collision Check
       if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY) {
         triggerLeak("Pipeline hit the engine chamber casing!");
         return;
       }
 
-      // Self-Collision Check[cite: 2]
+      // Self-Collision Check
       if (pipeline.some(segment => segment.x === head.x && segment.y === head.y)) {
         triggerLeak("Pipeline pressure overloaded by self-intersection!");
         return;
       }
 
-      // Prepend new head[cite: 2]
+      // Prepend new head
       pipeline.unshift(head);
 
-      // Check if food eaten[cite: 2]
+      // Check if food eaten
       if (head.x === oilDrop.x && head.y === oilDrop.y) {
         if (oilDrop.special) {
           score += 25;
-          currentSpeed = Math.max(60, currentSpeed - 12); // Speed increase challenge[cite: 2]
+          currentSpeed = Math.max(50, currentSpeed - 12); // Dynamic speed step scaling
         } else {
           score += 10;
-          currentSpeed = Math.max(60, currentSpeed - 4);
+          currentSpeed = Math.max(50, currentSpeed - 4);
         }
         scoreText.innerText = `FLOW: ${score} L`;
         spawnOilDrop();
       } else {
-        // Keep moving by dropping the tail[cite: 2]
         pipeline.pop();
       }
     }
@@ -712,7 +744,7 @@
     function drawGame() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw cyber Grid Background[cite: 2]
+      // Draw Grid Background
       ctx.fillStyle = '#050508';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -731,7 +763,7 @@
         ctx.stroke();
       }
 
-      // Draw Oil Target Food[cite: 2]
+      // Draw Oil Target Food
       ctx.save();
       const fx = oilDrop.x * gridCellWidth + gridCellWidth / 2;
       const fy = oilDrop.y * gridCellHeight + gridCellHeight / 2;
@@ -747,7 +779,6 @@
       }
 
       ctx.beginPath();
-      // Draw as drop shape[cite: 2]
       ctx.moveTo(fx, fy - fRadius);
       ctx.bezierCurveTo(fx + fRadius, fy, fx + fRadius, fy + fRadius, fx, fy + fRadius);
       ctx.bezierCurveTo(fx - fRadius, fy + fRadius, fx - fRadius, fy, fx, fy - fRadius);
@@ -755,7 +786,7 @@
       ctx.fill();
       ctx.restore();
 
-      // Draw Pipeline Body[cite: 2]
+      // Draw Pipeline Body
       pipeline.forEach((segment, index) => {
         ctx.save();
         const sx = segment.x * gridCellWidth;
@@ -763,33 +794,33 @@
         const innerOffset = 2;
 
         if (index === 0) {
-          // Lead segment head[cite: 2]
-          ctx.fillStyle = '#D32F2F'; // Red head logo styling[cite: 2]
+          // Lead segment head
+          ctx.fillStyle = '#D32F2F';
           ctx.shadowBlur = 12;
           ctx.shadowColor = '#D32F2F';
           ctx.beginPath();
           ctx.roundRect(sx + innerOffset, sy + innerOffset, gridCellWidth - innerOffset*2, gridCellHeight - innerOffset*2, 6);
           ctx.fill();
 
-          // Add glowing yellow head sensors (eyes)[cite: 2]
+          // Add head sensors (eyes)
           ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
-          if (dx === 1) { // moving right[cite: 2]
+          if (dx === 1) { // moving right
             ctx.arc(sx + gridCellWidth - 6, sy + 6, 2.5, 0, Math.PI*2);
             ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
-          } else if (dx === -1) { // moving left[cite: 2]
+          } else if (dx === -1) { // moving left
             ctx.arc(sx + 6, sy + 6, 2.5, 0, Math.PI*2);
             ctx.arc(sx + 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
-          } else if (dy === 1) { // moving down[cite: 2]
+          } else if (dy === 1) { // moving down
             ctx.arc(sx + 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
             ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
-          } else { // moving up[cite: 2]
+          } else { // moving up
             ctx.arc(sx + 6, sy + 6, 2.5, 0, Math.PI*2);
             ctx.arc(sx + gridCellWidth - 6, sy + 6, 2.5, 0, Math.PI*2);
           }
           ctx.fill();
         } else {
-          // Standard golden pipeline body segment[cite: 2]
+          // Standard golden pipeline body segment
           ctx.fillStyle = '#FF6D00';
           ctx.shadowBlur = 6;
           ctx.shadowColor = '#FF6D00';
@@ -801,15 +832,5 @@
       });
     }
   </script>
-
-  <!-- High performance shake styling on crash[cite: 2] -->
-  <style>
-    @keyframes shake {
-      10%, 90% { transform: translate3d(-1px, 0, 0); }
-      20%, 80% { transform: translate3d(2px, 0, 0); }
-      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-      40%, 60% { transform: translate3d(4px, 0, 0); }
-    }
-  </style>
 </body>
 </html>
