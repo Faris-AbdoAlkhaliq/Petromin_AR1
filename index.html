@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Petromin AR - Core Shield Pro</title>
+  <title>Petromin AR - Pipeline Classic</title>
   
   <!-- Stable A-Frame & MindAR CDN pairing -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
@@ -18,7 +18,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Loading Screen using Petromin's corporate color palette */
+    /* Loading Screen */
     #loading {
       position: fixed;
       top: 0;
@@ -176,12 +176,8 @@
     }
 
     #score-text {
-      color: #FF9100;
-      text-shadow: 0 0 5px rgba(255, 145, 0, 0.3);
-    }
-
-    #multiplier-text {
       color: #00FFCC;
+      text-shadow: 0 0 5px rgba(0, 255, 210, 0.3);
     }
 
     /* Canvas wrappers and UI menus */
@@ -190,13 +186,54 @@
       flex-grow: 1;
       width: 100%;
       background: #050508;
+      display: flex;
+      flex-direction: column;
     }
 
     #gameCanvas {
       display: block;
       width: 100%;
-      height: 100%;
+      flex-grow: 1;
     }
+
+    /* Mobile D-Pad Controller */
+    #dpad {
+      height: 140px;
+      background: #0c0c14;
+      border-top: 1px solid #1a1a26;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .dpad-btn {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background: #1c1c2b;
+      border: 1px solid #2d2d42;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+
+    .dpad-btn:active {
+      background: #FF6D00;
+      border-color: #FF9100;
+    }
+
+    #btn-up { top: 10px; left: 50%; transform: translateX(-50%); }
+    #btn-down { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    #btn-left { left: calc(50% - 60px); top: 50%; transform: translateY(-50%); }
+    #btn-right { right: calc(50% - 60px); top: 50%; transform: translateY(-50%); }
 
     .game-overlay {
       position: absolute;
@@ -246,24 +283,21 @@
       transform: scale(0.96);
     }
 
-    /* Legend/How-to visual elements in starting overlay */
     .legend-box {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
+      gap: 15px;
       margin: 15px 0;
       background: rgba(255,255,255,0.04);
-      padding: 14px;
+      padding: 12px;
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.08);
       font-size: 11px;
       text-align: left;
-      max-width: 280px;
     }
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 6px;
     }
   </style>
 </head>
@@ -289,45 +323,48 @@
   <div id="game-container">
     <div class="card-handle"></div>
     <div class="game-header">
-      <h2>CORE DEFENDER</h2>
+      <h2>PETRO-PIPELINE</h2>
       <div class="hud-metrics">
-        <div class="metric-box" id="multiplier-text">LEVEL 1</div>
-        <div class="metric-box" id="score-text">ENERGY: 0%</div>
+        <div class="metric-box" id="score-text">FLOW: 0 L</div>
       </div>
     </div>
 
     <div class="canvas-wrapper">
       <canvas id="gameCanvas"></canvas>
       
+      <!-- Mobile Touch Controls -->
+      <div id="dpad">
+        <div class="dpad-btn" id="btn-up">▲</div>
+        <div class="dpad-btn" id="btn-left">◀</div>
+        <div class="dpad-btn" id="btn-right">▶</div>
+        <div class="dpad-btn" id="btn-down">▼</div>
+      </div>
+
       <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
-        <h3 style="font-size: 24px; color: #FF6D00; margin-bottom: 5px;">PETROMIN CORE SHIELD</h3>
-        <p style="font-size: 12px; color: #aaa; margin: 0 0 10px;">Drag left/right to rotate your orbital shield and defend the core!</p>
+        <h3 style="font-size: 26px; color: #FF6D00; margin-bottom: 5px;">PETROMIN PIPELINE</h3>
+        <p style="font-size: 12px; color: #aaa; margin: 0 0 10px;">The classic Snake game, built for oil flow! Connect pipeline segments without hitting the walls or yourself.</p>
         
         <div class="legend-box">
           <div class="legend-item">
-            <span style="display:inline-block; width:12px; height:12px; background:#FF9100; border-radius:50%; box-shadow: 0 0 8px #FF9100;"></span>
-            <span><strong>Golden Oil:</strong> LET IT ENTER the open shield gap (+10% Energy).</span>
+            <span style="display:inline-block; width:12px; height:12px; background:#FF9100; border-radius:50%; box-shadow: 0 0 6px #FF9100;"></span>
+            <span>Oil Drop (+10 Liters)</span>
           </div>
           <div class="legend-item">
-            <span style="display:inline-block; width:12px; height:12px; background:#FF1744; transform:rotate(45deg); box-shadow: 0 0 8px #FF1744;"></span>
-            <span><strong>Carbon Debris:</strong> BLOCK IT with your shield to prevent engine damage.</span>
-          </div>
-          <div class="legend-item">
-            <span style="display:inline-block; width:12px; height:12px; background:#00E676; border-radius:2px; box-shadow: 0 0 8px #00E676;"></span>
-            <span><strong>Coolant Battery:</strong> Catch to activate full 360° Nano-Shield.</span>
+            <span style="display:inline-block; width:12px; height:12px; background:#00FFCC; border-radius:50%; box-shadow: 0 0 6px #00FFCC;"></span>
+            <span>Premium Fuel (Speed up)</span>
           </div>
         </div>
 
-        <button onclick="startGame()">INITIALIZE CORE</button>
+        <button onclick="startGame()">START FLOW</button>
       </div>
 
       <!-- Game Over Overlay -->
       <div id="gameover-overlay" class="game-overlay" style="display: none;">
-        <h3 id="gameover-title" style="font-size: 28px;">CORE DESTROYED</h3>
-        <p id="final-score-text" style="font-size: 16px; margin: 8px 0; color: #00FFCC;">Peak Energy: 0%</p>
+        <h3 style="font-size: 28px; color: #D32F2F;">PIPELINE LEAK!</h3>
+        <p id="final-score-text" style="font-size: 16px; margin: 8px 0; color: #00FFCC;">Total Flow: 0 Liters</p>
         <p id="game-over-reason" style="font-size: 12px; color: #aaa; max-width: 250px; margin-bottom: 10px;"></p>
-        <button onclick="startGame()">REDEPLOY DEFENDER</button>
+        <button onclick="startGame()">REPAIR & RETRY</button>
       </div>
     </div>
   </div>
@@ -360,17 +397,16 @@
       errConsole.innerHTML += '<strong>[System Check]:</strong> ' + message + '<br>';
     }
 
-    // Capture global page failures
+    // Capture global failures
     window.onerror = function(msg, url, line) {
       showRuntimeError(`${msg} (line ${line})`);
       return false;
     };
 
-    // Auto-detect if host path is root or subfolder (GitHub Pages Repo setup)
+    // Build target descriptors database link
     function buildTargetUrl() {
       const path = window.location.pathname;
       const segments = path.split('/').filter(s => s !== "");
-      
       if (segments.length > 0 && !path.endsWith('.html')) {
         return `/${segments[0]}/targets.mind`;
       }
@@ -380,7 +416,7 @@
     const targetUrl = buildTargetUrl();
     sceneEl.setAttribute('mindar-image', `imageTargetSrc: ${targetUrl}; filterMinCF:0.001; filterBeta: 10`);
 
-    // Complete loading stage once engine is online
+    // Complete loading stage
     sceneEl.addEventListener("arReady", () => {
       loadingScreen.style.opacity = '0';
       setTimeout(() => {
@@ -388,12 +424,11 @@
       }, 500);
     });
 
-    // Detect missing file or assets
     sceneEl.addEventListener("arError", () => {
       showRuntimeError(`Engine could not download target descriptor database at: ${window.location.origin}${targetUrl}`);
     });
 
-    // Image target detection triggers information panel
+    // Handle AR Recognition Match
     targetEntity.addEventListener("targetFound", () => {
       gameContainer.classList.add('active');
       scanGuide.style.display = 'none';
@@ -401,421 +436,293 @@
     });
 
     // ==========================================================
-    //            PETROMIN CORE SHIELD 2D ARCADE CANVAS
+    //       PETROMIN PIPELINE (CLASSIC RETRO SNAKE RESKIN)
     // ==========================================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const startOverlay = document.getElementById('start-overlay');
     const gameoverOverlay = document.getElementById('gameover-overlay');
     const scoreText = document.getElementById('score-text');
-    const multiplierText = document.getElementById('multiplier-text');
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
-    const gameoverTitle = document.getElementById('gameover-title');
 
+    // Grid details
+    const gridSize = 20; // 20x20 Grid
+    let tileCountX = 0;
+    let tileCountY = 0;
+    let gridCellWidth = 0;
+    let gridCellHeight = 0;
+
+    let pipeline = [];
+    let dx = 1; // current X velocity
+    let dy = 0; // current Y velocity
+    let nextDx = 1;
+    let nextDy = 0;
+
+    let oilDrop = { x: 0, y: 0, special: false };
+    let score = 0;
     let gameActive = false;
-    let energyLevel = 0;       // Goal is to hit 100% (Win state/Level progression)
-    let engineHealth = 100;    // Standard health pool
-    let gameLevel = 1;
-    let maxLevelReached = 1;
-    let shieldAngle = 0;       // Angle in Radians
-    let shieldWidth = 1.9;     // Radian size of shield (~110 degrees)
-    let shieldRadius = 75;     // Radius distance from core
-    
-    let nanoShieldActive = false;
-    let nanoShieldTimer = 0;
-
-    let particles = [];
-    let projectiles = [];
-    let animationId = null;
-    let coreRotation = 0;
-    let inputPrevX = null;
+    let gameInterval = null;
+    let baseSpeed = 140; // update frequency in ms
+    let currentSpeed = baseSpeed;
 
     function initCanvas() {
       const rect = canvas.parentElement.getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      // Keep canvas square-focused for reliable retro grid sizing
+      const size = Math.min(rect.width, rect.height - 10);
+      canvas.width = size;
+      canvas.height = size;
+
+      tileCountX = gridSize;
+      tileCountY = gridSize;
+      gridCellWidth = canvas.width / tileCountX;
+      gridCellHeight = canvas.height / tileCountY;
     }
 
-    // Interactive swipe handling
-    canvas.addEventListener('mousedown', (e) => { inputPrevX = e.clientX; });
-    canvas.addEventListener('mousemove', (e) => {
-      if (inputPrevX !== null) {
-        let deltaX = e.clientX - inputPrevX;
-        shieldAngle += deltaX * 0.015; // sensitivity tuning
-        inputPrevX = e.clientX;
+    // Direction handlers
+    function setDirection(newDx, newDy) {
+      if (!gameActive) return;
+      // Prevent reversing into oneself
+      if ((newDx === -1 && dx === 1) || (newDx === 1 && dx === -1)) return;
+      if ((newDy === -1 && dy === 1) || (newDy === 1 && dy === -1)) return;
+      nextDx = newDx;
+      nextDy = newDy;
+    }
+
+    // D-Pad Touch Listeners
+    document.getElementById('btn-up').addEventListener('touchstart', (e) => { setDirection(0, -1); e.preventDefault(); });
+    document.getElementById('btn-down').addEventListener('touchstart', (e) => { setDirection(0, 1); e.preventDefault(); });
+    document.getElementById('btn-left').addEventListener('touchstart', (e) => { setDirection(-1, 0); e.preventDefault(); });
+    document.getElementById('btn-right').addEventListener('touchstart', (e) => { setDirection(1, 0); e.preventDefault(); });
+
+    document.getElementById('btn-up').addEventListener('mousedown', () => setDirection(0, -1));
+    document.getElementById('btn-down').addEventListener('mousedown', () => setDirection(0, 1));
+    document.getElementById('btn-left').addEventListener('mousedown', () => setDirection(-1, 0));
+    document.getElementById('btn-right').addEventListener('mousedown', () => setDirection(1, 0));
+
+    // Support Keyboard arrows for desktop testing
+    window.addEventListener('keydown', (e) => {
+      switch(e.key) {
+        case 'ArrowUp': setDirection(0, -1); break;
+        case 'ArrowDown': setDirection(0, 1); break;
+        case 'ArrowLeft': setDirection(-1, 0); break;
+        case 'ArrowRight': setDirection(1, 0); break;
       }
     });
-    window.addEventListener('mouseup', () => { inputPrevX = null; });
 
-    canvas.addEventListener('touchstart', (e) => { inputPrevX = e.touches[0].clientX; });
-    canvas.addEventListener('touchmove', (e) => {
-      if (inputPrevX !== null) {
-        let deltaX = e.touches[0].clientX - inputPrevX;
-        shieldAngle += deltaX * 0.02; // mobile sensitivity boost
-        inputPrevX = e.touches[0].clientX;
+    // 4-Way Swipe detection support on screen
+    let touchStartX = 0;
+    let touchStartY = 0;
+    canvas.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, {passive: true});
+
+    canvas.addEventListener('touchend', (e) => {
+      const diffX = e.changedTouches[0].clientX - touchStartX;
+      const diffY = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (Math.abs(diffX) > 30) {
+          setDirection(diffX > 0 ? 1 : -1, 0);
+        }
+      } else {
+        if (Math.abs(diffY) > 30) {
+          setDirection(0, diffY > 0 ? 1 : -1);
+        }
       }
-      e.preventDefault();
-    }, { passive: false });
-    window.addEventListener('touchend', () => { inputPrevX = null; });
+    }, {passive: true});
+
+    function spawnOilDrop() {
+      let valid = false;
+      let rx, ry;
+      while(!valid) {
+        rx = Math.floor(Math.random() * tileCountX);
+        ry = Math.floor(Math.random() * tileCountY);
+        // Ensure food does not spawn inside the current pipeline
+        valid = !pipeline.some(segment => segment.x === rx && segment.y === ry);
+      }
+      oilDrop.x = rx;
+      oilDrop.y = ry;
+      oilDrop.special = Math.random() < 0.25; // 25% chance of premium high speed value drop
+    }
 
     function startGame() {
       startOverlay.style.display = 'none';
       gameoverOverlay.style.display = 'none';
       initCanvas();
 
-      energyLevel = 0;
-      engineHealth = 100;
-      gameLevel = 1;
-      shieldWidth = 1.9;
-      projectiles = [];
-      particles = [];
+      score = 0;
+      dx = 1;
+      dy = 0;
+      nextDx = 1;
+      nextDy = 0;
+      currentSpeed = baseSpeed;
+
+      // Start in middle, length of 3 segments
+      pipeline = [
+        { x: 5, y: 10 },
+        { x: 4, y: 10 },
+        { x: 3, y: 10 }
+      ];
+
+      spawnOilDrop();
       gameActive = true;
-      nanoShieldActive = false;
+      scoreText.innerText = `FLOW: 0 L`;
 
-      updateHUD();
-      if(animationId) cancelAnimationFrame(animationId);
-      gameLoop();
+      if (gameInterval) clearInterval(gameInterval);
+      runLoop();
     }
 
-    function updateHUD() {
-      scoreText.innerText = `ENERGY: ${Math.floor(energyLevel)}%`;
-      multiplierText.innerText = `LEVEL ${gameLevel}`;
+    function runLoop() {
+      if (!gameActive) return;
+      gameInterval = setTimeout(() => {
+        updateGame();
+        drawGame();
+        runLoop();
+      }, currentSpeed);
     }
 
-    function triggerScreenShake() {
-      gameContainer.style.animation = 'none';
-      setTimeout(() => gameContainer.style.animation = 'shake 0.3s cubic-bezier(.36,.07,.19,.97) both', 1);
-    }
+    function updateGame() {
+      dx = nextDx;
+      dy = nextDy;
 
-    function spawnExplosion(x, y, color, count = 10) {
-      for (let i = 0; i < count; i++) {
-        let angle = Math.random() * Math.PI * 2;
-        let speed = 2 + Math.random() * 5;
-        particles.push({
-          x: x,
-          y: y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          radius: 1.5 + Math.random() * 2.5,
-          color: color,
-          alpha: 1,
-          decay: 0.02 + Math.random() * 0.02
-        });
-      }
-    }
+      // Calculate new head coordinates
+      const head = { x: pipeline[0].x + dx, y: pipeline[0].y + dy };
 
-    function spawnProjectile() {
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
-      // Spawn slightly off-screen boundaries
-      const spawnRadius = Math.max(canvas.width, canvas.height) / 2 + 30;
-      const spawnAngle = Math.random() * Math.PI * 2;
-
-      const px = cx + Math.cos(spawnAngle) * spawnRadius;
-      const py = cy + Math.sin(spawnAngle) * spawnRadius;
-
-      // Types: 'rust' (must block), 'oil' (must pass), 'coolant' (bonus shield)
-      const roll = Math.random();
-      let type = 'rust';
-      if (roll < 0.45) {
-        type = 'oil';
-      } else if (roll < 0.52) {
-        type = 'coolant';
+      // Wall Collision Check
+      if (head.x < 0 || head.x >= tileCountX || head.y < 0 || head.y >= tileCountY) {
+        triggerLeak("Pipeline hit the engine chamber casing!");
+        return;
       }
 
-      // Speed scales up with high level tiers
-      const speed = (1.5 + Math.random() * 2) * (1 + (gameLevel * 0.15));
+      // Self-Collision Check
+      if (pipeline.some(segment => segment.x === head.x && segment.y === head.y)) {
+        triggerLeak("Pipeline pressure overloaded by self-intersection!");
+        return;
+      }
 
-      projectiles.push({
-        x: px,
-        y: py,
-        type: type,
-        speed: speed,
-        radius: type === 'coolant' ? 7 : 9,
-        angle: spawnAngle
-      });
-    }
+      // Prepend new head
+      pipeline.unshift(head);
 
-    function gameOver(won, message) {
-      gameActive = false;
-      if(animationId) cancelAnimationFrame(animationId);
-
-      if (won) {
-        gameoverTitle.innerText = "SYSTEM SECURED!";
-        gameoverTitle.style.color = "#00FFCC";
-        finalScoreText.innerText = `All levels cleared successfully!`;
+      // Check if food eaten
+      if (head.x === oilDrop.x && head.y === oilDrop.y) {
+        if (oilDrop.special) {
+          score += 25;
+          currentSpeed = Math.max(60, currentSpeed - 12); // Speed increase challenge
+        } else {
+          score += 10;
+          currentSpeed = Math.max(60, currentSpeed - 4);
+        }
+        scoreText.innerText = `FLOW: ${score} L`;
+        spawnOilDrop();
       } else {
-        gameoverTitle.innerText = "CORE CRASH";
-        gameoverTitle.style.color = "#D32F2F";
-        finalScoreText.innerText = `Final Level: ${gameLevel} (Energy: ${Math.floor(energyLevel)}%)`;
+        // Keep moving by dropping the tail
+        pipeline.pop();
       }
+    }
 
-      gameOverReason.innerText = message;
+    function triggerLeak(reason) {
+      gameActive = false;
+      clearTimeout(gameInterval);
+      finalScoreText.innerText = `Total Flow: ${score} Liters`;
+      gameOverReason.innerText = reason;
       gameoverOverlay.style.display = 'flex';
     }
 
-    function gameLoop() {
-      if (!gameActive) return;
-
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
-
+    function drawGame() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // 1. Draw Space Background grid
+      // Draw cyber Grid Background
       ctx.fillStyle = '#050508';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
+
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
       ctx.lineWidth = 1;
-      for (let i = 0; i < canvas.width; i += 40) {
-        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-      }
-      for (let j = 0; j < canvas.height; j += 40) {
-        ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
-      }
-
-      // 2. Process active Nano-Shield Timer
-      if (nanoShieldActive) {
-        nanoShieldTimer -= 16.67; // approx ms per frame
-        if (nanoShieldTimer <= 0) {
-          nanoShieldActive = false;
-        }
-      }
-
-      // 3. Keep shield angle standardized (0 to 2PI)
-      shieldAngle = (shieldAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-
-      // 4. Draw Core Orbit Grid Rings
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(cx, cy, shieldRadius, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // 5. Draw Shield Player Arc
-      ctx.save();
-      ctx.shadowBlur = 12;
-      
-      if (nanoShieldActive) {
-        // Full, beautiful circular protective grid
-        ctx.strokeStyle = '#00E676';
-        ctx.shadowColor = '#00E676';
-        ctx.lineWidth = 8;
+      for (let i = 0; i <= tileCountX; i++) {
         ctx.beginPath();
-        ctx.arc(cx, cy, shieldRadius, 0, Math.PI * 2);
+        ctx.moveTo(i * gridCellWidth, 0);
+        ctx.lineTo(i * gridCellWidth, canvas.height);
         ctx.stroke();
+      }
+      for (let j = 0; j <= tileCountY; j++) {
+        ctx.beginPath();
+        ctx.moveTo(0, j * gridCellHeight);
+        ctx.lineTo(canvas.width, j * gridCellHeight);
+        ctx.stroke();
+      }
+
+      // Draw Oil Target Food
+      ctx.save();
+      const fx = oilDrop.x * gridCellWidth + gridCellWidth / 2;
+      const fy = oilDrop.y * gridCellHeight + gridCellHeight / 2;
+      const fRadius = (gridCellWidth / 2) - 2;
+
+      ctx.shadowBlur = 10;
+      if (oilDrop.special) {
+        ctx.fillStyle = '#00FFCC';
+        ctx.shadowColor = '#00FFCC';
       } else {
-        // Normal split-gate shield
-        ctx.strokeStyle = '#00E676';
-        ctx.shadowColor = '#00E676';
-        ctx.lineWidth = 6;
-        ctx.beginPath();
-        
-        // Define shield range
-        const start = shieldAngle - shieldWidth / 2;
-        const end = shieldAngle + shieldWidth / 2;
-        ctx.arc(cx, cy, shieldRadius, start, end);
-        ctx.stroke();
-
-        // Add subtle endpoints markers
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(cx + Math.cos(start) * shieldRadius, cy + Math.sin(start) * shieldRadius, 3.5, 0, Math.PI * 2);
-        ctx.arc(cx + Math.cos(end) * shieldRadius, cy + Math.sin(end) * shieldRadius, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillStyle = '#FF9100';
+        ctx.shadowColor = '#FF9100';
       }
-      ctx.restore();
 
-      // 6. Draw central Engine Core
-      coreRotation += 0.015;
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(coreRotation);
-
-      // Outer ring
-      ctx.strokeStyle = '#D32F2F';
-      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.arc(0, 0, 32, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Engine Gears
-      ctx.fillStyle = 'rgba(211, 47, 47, 0.15)';
-      ctx.beginPath();
-      for (let g = 0; g < 8; g++) {
-        let gearAngle = (g * Math.PI / 4);
-        ctx.lineTo(Math.cos(gearAngle) * 36, Math.sin(gearAngle) * 36);
-        ctx.lineTo(Math.cos(gearAngle + 0.15) * 32, Math.sin(gearAngle + 0.15) * 32);
-      }
+      // Draw as drop shape
+      ctx.moveTo(fx, fy - fRadius);
+      ctx.bezierCurveTo(fx + fRadius, fy, fx + fRadius, fy + fRadius, fx, fy + fRadius);
+      ctx.bezierCurveTo(fx - fRadius, fy + fRadius, fx - fRadius, fy, fx, fy - fRadius);
       ctx.closePath();
       ctx.fill();
-
-      // Inner Solid Core
-      ctx.fillStyle = '#D32F2F';
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = '#D32F2F';
-      ctx.beginPath();
-      ctx.arc(0, 0, 20, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Golden Petromin Center Light
-      ctx.fillStyle = '#FF9100';
-      ctx.beginPath();
-      ctx.arc(0, 0, 8 + Math.sin(coreRotation * 2) * 3, 0, Math.PI * 2);
-      ctx.fill();
-
       ctx.restore();
 
-      // Draw Engine health bar above core
-      ctx.fillStyle = '#37474F';
-      ctx.fillRect(cx - 30, cy - 50, 60, 6);
-      ctx.fillStyle = engineHealth > 35 ? '#00E676' : '#FF1744';
-      ctx.fillRect(cx - 30, cy - 50, 60 * (engineHealth / 100), 6);
-
-      // 7. Process & Draw Projectiles
-      // Control rates dynamically
-      const spawnFrequency = Math.max(18, 45 - gameLevel * 5);
-      if (Math.random() < (1 / spawnFrequency)) {
-        spawnProjectile();
-      }
-
-      for (let i = projectiles.length - 1; i >= 0; i--) {
-        const proj = projectiles[i];
-        
-        // Move towards center
-        const dx = cx - proj.x;
-        const dy = cy - proj.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        if (dist < 10) {
-          // HIT THE CORE
-          if (proj.type === 'rust') {
-            engineHealth -= 20;
-            triggerScreenShake();
-            spawnExplosion(proj.x, proj.y, '#FF1744', 16);
-            if (engineHealth <= 0) {
-              gameOver(false, "Engine corrupted by carbon rust build-up.");
-              return;
-            }
-          } else if (proj.type === 'oil') {
-            energyLevel += 10;
-            spawnExplosion(proj.x, proj.y, '#FF9100', 8);
-            
-            // Progression System
-            if (energyLevel >= 100) {
-              if (gameLevel < 5) {
-                gameLevel++;
-                energyLevel = 0;
-                shieldWidth = Math.max(1.3, shieldWidth - 0.15); // Shrink shield to increase challenge!
-                spawnExplosion(cx, cy, '#00FFCC', 30);
-              } else {
-                gameOver(true, "All engine cylinders running perfectly clean at maximum capacity!");
-                return;
-              }
-            }
-            updateHUD();
-          }
-          projectiles.splice(i, 1);
-          continue;
-        }
-
-        // Collision check with Shield boundary line
-        if (dist <= (shieldRadius + 4) && dist >= (shieldRadius - 4)) {
-          // Calculate angle relative to center point
-          let hitAngle = Math.atan2(proj.y - cy, proj.x - cx);
-          hitAngle = (hitAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-
-          // Check if hitting active shield segment
-          let isBlocked = false;
-          if (nanoShieldActive) {
-            isBlocked = true;
-          } else {
-            // Find relative span between boundaries
-            let relativeDiff = Math.abs(hitAngle - shieldAngle);
-            if (relativeDiff > Math.PI) relativeDiff = Math.PI * 2 - relativeDiff;
-            if (relativeDiff <= shieldWidth / 2) {
-              isBlocked = true;
-            }
-          }
-
-          if (isBlocked) {
-            if (proj.type === 'rust') {
-              // Successfully blocked harmful elements
-              spawnExplosion(proj.x, proj.y, '#90A4AE', 6);
-            } else if (proj.type === 'oil') {
-              // Mistake: blocked clean oil from reaching core
-              spawnExplosion(proj.x, proj.y, '#FF9100', 2);
-            } else if (proj.type === 'coolant') {
-              // Activating nano barrier shield
-              nanoShieldActive = true;
-              nanoShieldTimer = 5000; // 5 seconds
-              spawnExplosion(proj.x, proj.y, '#00E676', 20);
-            }
-            projectiles.splice(i, 1);
-            continue;
-          }
-        }
-
-        // Projectile rendering
-        proj.x += Math.cos(proj.angle + Math.PI) * proj.speed;
-        proj.y += Math.sin(proj.angle + Math.PI) * proj.speed;
-
+      // Draw Pipeline Body
+      pipeline.forEach((segment, index) => {
         ctx.save();
-        ctx.shadowBlur = 8;
-        if (proj.type === 'rust') {
-          ctx.fillStyle = '#FF1744';
-          ctx.shadowColor = '#FF1744';
-          // Diamond danger shape
+        const sx = segment.x * gridCellWidth;
+        const sy = segment.y * gridCellHeight;
+        const innerOffset = 2;
+
+        if (index === 0) {
+          // Lead segment head
+          ctx.fillStyle = '#D32F2F'; // Red head logo styling
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#D32F2F';
           ctx.beginPath();
-          ctx.moveTo(proj.x, proj.y - proj.radius);
-          ctx.lineTo(proj.x + proj.radius, proj.y);
-          ctx.lineTo(proj.x, proj.y + proj.radius);
-          ctx.lineTo(proj.x - proj.radius, proj.y);
-          ctx.closePath();
+          ctx.roundRect(sx + innerOffset, sy + innerOffset, gridCellWidth - innerOffset*2, gridCellHeight - innerOffset*2, 6);
           ctx.fill();
-        } else if (proj.type === 'oil') {
-          ctx.fillStyle = '#FF9100';
-          ctx.shadowColor = '#FF9100';
-          // Droplet shape
+
+          // Add glowing yellow head sensors (eyes)
+          ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
-          ctx.arc(proj.x, proj.y, proj.radius, 0, Math.PI * 2);
+          if (dx === 1) { // moving right
+            ctx.arc(sx + gridCellWidth - 6, sy + 6, 2.5, 0, Math.PI*2);
+            ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
+          } else if (dx === -1) { // moving left
+            ctx.arc(sx + 6, sy + 6, 2.5, 0, Math.PI*2);
+            ctx.arc(sx + 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
+          } else if (dy === 1) { // moving down
+            ctx.arc(sx + 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
+            ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
+          } else { // moving up
+            ctx.arc(sx + 6, sy + 6, 2.5, 0, Math.PI*2);
+            ctx.arc(sx + gridCellWidth - 6, sy + 6, 2.5, 0, Math.PI*2);
+          }
           ctx.fill();
-        } else if (proj.type === 'coolant') {
-          ctx.fillStyle = '#00E676';
-          ctx.shadowColor = '#00E676';
-          // Cross battery shape
-          ctx.fillRect(proj.x - 3, proj.y - proj.radius, 6, proj.radius * 2);
-          ctx.fillRect(proj.x - proj.radius, proj.y - 3, proj.radius * 2, 6);
+        } else {
+          // Standard golden pipeline body segment
+          ctx.fillStyle = '#FF6D00';
+          ctx.shadowBlur = 6;
+          ctx.shadowColor = '#FF6D00';
+          ctx.beginPath();
+          ctx.roundRect(sx + innerOffset, sy + innerOffset, gridCellWidth - innerOffset*2, gridCellHeight - innerOffset*2, 4);
+          ctx.fill();
         }
         ctx.restore();
-      }
-
-      // 8. Handle visual particles explosions
-      for (let p = particles.length - 1; p >= 0; p--) {
-        const prt = particles[p];
-        prt.x += prt.vx;
-        prt.y += prt.vy;
-        prt.alpha -= prt.decay;
-        if (prt.alpha <= 0) {
-          particles.splice(p, 1);
-          continue;
-        }
-        ctx.save();
-        ctx.globalAlpha = prt.alpha;
-        ctx.fillStyle = prt.color;
-        ctx.beginPath();
-        ctx.arc(prt.x, prt.y, prt.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      animationId = requestAnimationFrame(gameLoop);
+      });
     }
   </script>
 
-  <!-- Shake motion profile styling -->
+  <!-- High performance shake styling on crash -->
   <style>
     @keyframes shake {
       10%, 90% { transform: translate3d(-1px, 0, 0); }
