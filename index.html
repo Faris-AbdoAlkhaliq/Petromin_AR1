@@ -246,14 +246,6 @@
       transform: scale(0.96);
     }
 
-    .scanner-exit-btn {
-      background: transparent !important;
-      border: 2px solid #FF6D00 !important;
-      color: #FF6D00 !important;
-      box-shadow: none !important;
-      margin-top: 12px !important;
-    }
-
     /* Legend/How-to visual elements in starting overlay */
     .legend-box {
       display: flex;
@@ -328,13 +320,12 @@
         <button onclick="startGame()">START HIGHWAY</button>
       </div>
 
-      <!-- Game Over Overlay -->
+      <!-- Game Over Overlay (Cleaned of exit buttons) -->
       <div id="gameover-overlay" class="game-overlay" style="display: none;">
         <h3 style="font-size: 28px; color: #D32F2F;">VEHICLE CRASHED</h3>
         <p id="final-score-text" style="font-size: 16px; margin: 8px 0; color: #00FFCC;">Final Score: 0</p>
         <p id="game-over-reason" style="font-size: 12px; color: #aaa; max-width: 250px; margin-bottom: 10px;"></p>
         <button onclick="startGame()">RETRY RUN</button>
-        <button class="scanner-exit-btn" onclick="resetScanner()">SCAN ANOTHER LOGO</button>
       </div>
     </div>
   </div>
@@ -408,7 +399,7 @@
       initCanvas();
     });
 
-    // Reset scanner viewport
+    // Reset scanner viewport (kept in background script architecture)
     function resetScanner() {
       stopGame();
       gameContainer.classList.remove('active');
