@@ -92,7 +92,6 @@
       z-index: 10;
     }
 
-    /* Fix: Spans forced to fill the block layout container so bottom brackets anchor correctly */
     #scan-guide span {
       position: absolute;
       top: 0;
@@ -427,8 +426,6 @@
     device-orientation-permission-ui="enabled: false">
     
     <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-
-    <!-- Index 0 corresponds to the compiled logo marker inside targets.mind -->
     <a-entity id="ar-target" mindar-image-target="targetIndex: 0"></a-entity>
   </scene>
 
@@ -440,19 +437,16 @@
     const sceneEl = document.getElementById('ar-scene');
     const errConsole = document.getElementById('error-console');
 
-    // Display error stack if file compilation fails
     function showRuntimeError(message) {
       errConsole.style.display = 'block';
       errConsole.innerHTML += '<strong>[System Check]:</strong> ' + message + '<br>';
     }
 
-    // Capture global failures
     window.onerror = function(msg, url, line) {
       showRuntimeError(`${msg} (line ${line})`);
       return false;
     };
 
-    // Build target descriptors database link
     function buildTargetUrl() {
       const path = window.location.pathname;
       const segments = path.split('/').filter(s => s !== "");
@@ -465,7 +459,6 @@
     const targetUrl = buildTargetUrl();
     sceneEl.setAttribute('mindar-image', `imageTargetSrc: ${targetUrl}; filterMinCF:0.001; filterBeta: 10`);
 
-    // Complete loading stage
     sceneEl.addEventListener("arReady", () => {
       loadingScreen.style.opacity = '0';
       setTimeout(() => {
@@ -477,15 +470,14 @@
       showRuntimeError(`Engine could not download target descriptor database at: ${window.location.origin}${targetUrl}`);
     });
 
-    // Handle AR Recognition Match
     targetEntity.addEventListener("targetFound", () => {
       gameContainer.classList.add('active');
       scanGuide.style.display = 'none';
-      setTimeout(initCanvas, 400); // Wait for transition animation to end
+      setTimeout(initCanvas, 400);
     });
 
     // ==========================================================
-    //       PETROMIN PIPELINE (CLASSIC RETRO SNAKE RESKIN)
+    //       PETROMIN PIPELINE GAME & CONTROL ENGINE
     // ==========================================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -495,25 +487,24 @@
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
 
-    // Grid details
-    const gridSize = 20; // 20x20 Grid
+    const gridSize = 20; 
     let tileCountX = 0;
     let tileCountY = 0;
     let gridCellWidth = 0;
     let gridCellHeight = 0;
 
     let pipeline = [];
-    let dx = 1; // current X velocity
-    let dy = 0; // current Y velocity
-    
-    // Buffer next direct movements to prevent illegal self-reversing inputs
+    let dx = 1; 
+    let dy = 0; 
     let inputQueue = [];
 
     let oilDrop = { x: 0, y: 0, special: false };
     let score = 0;
     let gameActive = false;
-    let gameInterval = null;
-    let baseSpeed = 140; // update frequency in ms
+    let lastTickTime = 0;
+    
+    // Game loops speeds: baseline is snappy, drops speed loop updates up to a rapid 45ms step
+    let baseSpeed = 120; 
     let currentSpeed = baseSpeed;
 
     function initCanvas() {
@@ -535,32 +526,27 @@
       }
     }
 
-    // Dynamic resize listener to handle transitions, rotations, and folding screens
     window.addEventListener('resize', () => {
       if (gameContainer.classList.contains('active')) {
         requestAnimationFrame(initCanvas);
       }
     });
 
-    // Highly responsive queued direction setting
     function setDirection(newDx, newDy) {
       if (!gameActive) return;
       
-      // Get the last requested movement direction (or fallback to active state)
       const lastMove = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : { dx: dx, dy: dy };
 
-      // Prevent opposite action inputs entirely
       if ((newDx === -1 && lastMove.dx === 1) || (newDx === 1 && lastMove.dx === -1)) return;
       if ((newDy === -1 && lastMove.dy === 1) || (newDy === 1 && lastMove.dy === -1)) return;
 
-      // Limit buffer depth to keep controls feeling accurate and predictable
       if (inputQueue.length < 2) {
         inputQueue.push({ dx: newDx, dy: newDy });
       }
     }
 
     // ==========================================================
-    //            DYNAMIC VIRTUAL JOYSTICK PHYSICS
+    //      HIGH-SPEED REQUESTANIMATIONFRAME JOYSTICK ENGINE
     // ==========================================================
     const joystickBoundary = document.getElementById('joystick-boundary');
     const joystickStick = document.getElementById('joystick-stick');
@@ -568,24 +554,28 @@
     let isDragging = false;
     let dragStartX = 0;
     let dragStartY = 0;
-    const maxDistance = 40; // Clamped radius boundary
-    const deadzone = 12; // Minimum movement required before registers input
+    let currentPointerX = 0;
+    let currentPointerY = 0;
+    const maxDistance = 42; 
+    const deadzone = 8; // Lower deadzone for hyper-fast, low-effort swipes
 
     function handleStart(clientX, clientY) {
       isDragging = true;
       const rect = joystickBoundary.getBoundingClientRect();
       dragStartX = rect.left + rect.width / 2;
       dragStartY = rect.top + rect.height / 2;
+      currentPointerX = clientX;
+      currentPointerY = clientY;
       
-      // Clear visual delay scaling
       joystickStick.style.transition = 'none';
     }
 
-    function handleMove(clientX, clientY) {
+    // Hardware accelerated paint cycle handles positions before input threads stall
+    function processJoystickPhysics() {
       if (!isDragging) return;
 
-      const deltaX = clientX - dragStartX;
-      const deltaY = clientY - dragStartY;
+      const deltaX = currentPointerX - dragStartX;
+      const deltaY = currentPointerY - dragStartY;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
       let targetX = deltaX;
@@ -596,7 +586,6 @@
         targetY = (deltaY / distance) * maxDistance;
       }
 
-      // Hardware accelerated position updates
       joystickStick.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
 
       if (distance > deadzone) {
@@ -606,44 +595,50 @@
           setDirection(0, targetY > 0 ? 1 : -1);
         }
       }
+      
+      requestAnimationFrame(processJoystickPhysics);
     }
 
-    function handleEnd() {
-      if (!isDragging) return;
-      isDragging = false;
-      // Smooth visual spring return
-      joystickStick.style.transition = 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)';
-      joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
-    }
-
-    // Highly Responsive Mobile Touch Triggers (bypass 300ms tap lags completely)
     joystickBoundary.addEventListener('touchstart', (e) => {
       e.preventDefault();
       handleStart(e.touches[0].clientX, e.touches[0].clientY);
+      requestAnimationFrame(processJoystickPhysics);
     }, { passive: false });
 
     window.addEventListener('touchmove', (e) => {
       if (isDragging) {
-        handleMove(e.touches[0].clientX, e.touches[0].clientY);
+        currentPointerX = e.touches[0].clientX;
+        currentPointerY = e.touches[0].clientY;
       }
     }, { passive: true });
 
-    window.addEventListener('touchend', handleEnd, { passive: true });
+    window.addEventListener('touchend', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      joystickStick.style.transition = 'transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
+    }, { passive: true });
 
-    // Desktop mouse behaviors
+    // Desktop Mouse Handlers
     joystickBoundary.addEventListener('mousedown', (e) => {
       handleStart(e.clientX, e.clientY);
+      requestAnimationFrame(processJoystickPhysics);
     });
 
     window.addEventListener('mousemove', (e) => {
       if (isDragging) {
-        handleMove(e.clientX, e.clientY);
+        currentPointerX = e.clientX;
+        currentPointerY = e.clientY;
       }
     });
 
-    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      joystickStick.style.transition = 'transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
+    });
 
-    // Support Keyboard arrows for desktop testing
     window.addEventListener('keydown', (e) => {
       switch(e.key) {
         case 'ArrowUp': case 'w': case 'W': setDirection(0, -1); break;
@@ -663,7 +658,7 @@
       }
       oilDrop.x = rx;
       oilDrop.y = ry;
-      oilDrop.special = Math.random() < 0.25; // 25% chance of premium high speed value drop
+      oilDrop.special = Math.random() < 0.22; 
     }
 
     function startGame() {
@@ -677,7 +672,6 @@
       inputQueue = [];
       currentSpeed = baseSpeed;
 
-      // Start in middle, length of 3 segments
       pipeline = [
         { x: 5, y: 10 },
         { x: 4, y: 10 },
@@ -687,64 +681,58 @@
       spawnOilDrop();
       gameActive = true;
       scoreText.innerText = `FLOW: 0 L`;
-
-      if (gameInterval) clearTimeout(gameInterval);
-      runLoop();
+      
+      lastTickTime = performance.now();
+      requestAnimationFrame(gameMainLoop);
     }
 
-    function runLoop() {
+    // High performance timestamps game engine loop layout
+    function gameMainLoop(currentTime) {
       if (!gameActive) return;
-      gameInterval = setTimeout(() => {
+
+      requestAnimationFrame(gameMainLoop);
+
+      const delta = currentTime - lastTickTime;
+      if (delta >= currentSpeed) {
+        // Drop runtime rounding tracking leaks
+        lastTickTime = currentTime - (delta % currentSpeed);
         updateGame();
         drawGame();
-        runLoop();
-      }, currentSpeed);
+      }
     }
 
     function updateGame() {
-      // Dequeue next action direction instantly on cycle
       if (inputQueue.length > 0) {
         const nextMove = inputQueue.shift();
         dx = nextMove.dx;
         dy = nextMove.dy;
       }
 
-      // Calculate new raw head position
       let nextX = pipeline[0].x + dx;
       let nextY = pipeline[0].y + dy;
 
-      // Wrap-Around Screen Collision logic
-      if (nextX < 0) {
-        nextX = tileCountX - 1;
-      } else if (nextX >= tileCountX) {
-        nextX = 0;
-      }
+      if (nextX < 0) nextX = tileCountX - 1;
+      else if (nextX >= tileCountX) nextX = 0;
 
-      if (nextY < 0) {
-        nextY = tileCountY - 1;
-      } else if (nextY >= tileCountY) {
-        nextY = 0;
-      }
+      if (nextY < 0) nextY = tileCountY - 1;
+      else if (nextY >= tileCountY) nextY = 0;
 
       const head = { x: nextX, y: nextY };
 
-      // Self-Collision Check
       if (pipeline.some(segment => segment.x === head.x && segment.y === head.y)) {
         triggerLeak("Pipeline pressure overloaded by self-intersection!");
         return;
       }
 
-      // Prepend new head
       pipeline.unshift(head);
 
-      // Check if food eaten
       if (head.x === oilDrop.x && head.y === oilDrop.y) {
         if (oilDrop.special) {
           score += 25;
-          currentSpeed = Math.max(50, currentSpeed - 12); // Dynamic speed step scaling
+          currentSpeed = Math.max(45, currentSpeed - 12); 
         } else {
           score += 10;
-          currentSpeed = Math.max(50, currentSpeed - 4);
+          currentSpeed = Math.max(45, currentSpeed - 5);
         }
         scoreText.innerText = `FLOW: ${score} L`;
         spawnOilDrop();
@@ -755,7 +743,6 @@
 
     function triggerLeak(reason) {
       gameActive = false;
-      clearTimeout(gameInterval);
       finalScoreText.innerText = `Total Flow: ${score} Liters`;
       gameOverReason.innerText = reason;
       gameoverOverlay.style.display = 'flex';
@@ -764,7 +751,6 @@
     function drawGame() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Grid Background
       ctx.fillStyle = '#050508';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -814,7 +800,6 @@
         const innerOffset = 2;
 
         if (index === 0) {
-          // Lead segment head
           ctx.fillStyle = '#D32F2F';
           ctx.shadowBlur = 12;
           ctx.shadowColor = '#D32F2F';
@@ -822,25 +807,23 @@
           ctx.roundRect(sx + innerOffset, sy + innerOffset, gridCellWidth - innerOffset*2, gridCellHeight - innerOffset*2, 6);
           ctx.fill();
 
-          // Add head sensors (eyes)
           ctx.fillStyle = '#FFFFFF';
           ctx.beginPath();
-          if (dx === 1) { // moving right
+          if (dx === 1) { 
             ctx.arc(sx + gridCellWidth - 6, sy + 6, 2.5, 0, Math.PI*2);
             ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
-          } else if (dx === -1) { // moving left
+          } else if (dx === -1) { 
             ctx.arc(sx + 6, sy + 6, 2.5, 0, Math.PI*2);
             ctx.arc(sx + 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
-          } else if (dy === 1) { // moving down
+          } else if (dy === 1) { 
             ctx.arc(sx + 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
             ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
-          } else { // moving up
+          } else { 
             ctx.arc(sx + 6, sy + 6, 2.5, 0, Math.PI*2);
             ctx.arc(sx + gridCellWidth - 6, sy + 6, 2.5, 0, Math.PI*2);
           }
           ctx.fill();
         } else {
-          // Standard golden pipeline body segment
           ctx.fillStyle = '#FF6D00';
           ctx.shadowBlur = 6;
           ctx.shadowColor = '#FF6D00';
