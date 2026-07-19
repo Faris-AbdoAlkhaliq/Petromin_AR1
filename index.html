@@ -92,6 +92,16 @@
       z-index: 10;
     }
 
+    /* Fix: Spans forced to fill the block layout container so bottom brackets anchor correctly */
+    #scan-guide span {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
     #scan-guide::before, #scan-guide::after,
     #scan-guide span::before, #scan-guide span::after {
       content: "";
