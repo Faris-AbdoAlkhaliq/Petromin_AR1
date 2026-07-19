@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Petromin AR - Pipeline Classic</title>
+  <title>Petromin AR - Retro Hackathon Edition</title>
   
   <!-- Stable A-Frame & MindAR CDN pairing -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <!-- Classic 8-bit Pixel Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     /* Prevent rubber-banding or text selection highlighting on fast taps */
@@ -21,20 +24,24 @@
     body {
       margin: 0;
       overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Press Start 2P', monospace; /* Pixel Font */
       background-color: #000;
       -webkit-tap-highlight-color: transparent;
       touch-action: none;
+      image-rendering: pixelated; /* Force pixelated rendering for the whole page */
     }
 
-    /* Loading Screen */
+    /* Pixelated Loading Screen */
     #loading {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #D32F2F 0%, #FF6D00 100%);
+      background: #D32F2F;
+      /* Retro grid background pattern */
+      background-image: linear-gradient(#b71c1c 1px, transparent 1px), linear-gradient(90deg, #b71c1c 1px, transparent 1px);
+      background-size: 20px 20px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -46,39 +53,47 @@
       text-align: center;
     }
 
+    /* 8-bit Blocky Spinner */
     .spinner {
-      width: 55px;
-      height: 55px;
-      border: 5px solid rgba(255,255,255,0.2);
-      border-radius: 50%;
-      border-top-color: #FFFFFF;
-      animation: spin 1s linear infinite;
+      width: 40px;
+      height: 40px;
+      background: #FFF;
       margin-bottom: 25px;
+      animation: spin-step 1s steps(4) infinite; /* Snappy, low-framerate rotation */
+      box-shadow: 6px 6px 0px #000;
     }
 
-    @keyframes spin {
+    @keyframes spin-step {
       to { transform: rotate(360deg); }
+    }
+
+    .blink-text {
+      animation: blinker 1s step-start infinite;
+    }
+
+    @keyframes blinker {
+      50% { opacity: 0; }
     }
 
     /* Diagnostics On-Screen Console */
     #error-console {
       display: none;
-      background: rgba(0, 0, 0, 0.9);
-      color: #FF8A80;
+      background: #000;
+      color: #00FFCC;
       padding: 15px;
-      border-radius: 12px;
-      font-family: monospace;
-      font-size: 11px;
+      border: 4px solid #FF5252;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
       position: absolute;
       bottom: 20px;
       left: 20px;
       right: 20px;
       z-index: 10000;
       word-break: break-all;
-      border: 1px solid #FF5252;
+      box-shadow: 4px 4px 0px rgba(255, 82, 82, 0.5);
     }
 
-    /* Scanner Target Bounds HUD */
+    /* Scanner Target Bounds HUD - Blocky Style */
     #scan-guide {
       position: absolute;
       top: 45%;
@@ -86,8 +101,7 @@
       transform: translate(-50%, -50%);
       width: 260px;
       height: 260px;
-      border: 2px dashed rgba(255, 255, 255, 0.35);
-      border-radius: 24px;
+      border: 4px dashed rgba(255, 255, 255, 0.5); /* Thicker, sharper dash */
       pointer-events: none;
       z-index: 10;
     }
@@ -101,30 +115,30 @@
       display: block;
     }
 
+    /* Sharp framing corners */
     #scan-guide::before, #scan-guide::after,
     #scan-guide span::before, #scan-guide span::after {
       content: "";
       position: absolute;
-      width: 35px;
-      height: 35px;
-      border-color: #FFFFFF;
+      width: 40px;
+      height: 40px;
+      border-color: #00FFCC;
       border-style: solid;
     }
-    #scan-guide::before { top: -3px; left: -3px; border-width: 5px 0 0 5px; border-top-left-radius: 18px; }
-    #scan-guide::after { top: -3px; right: -3px; border-width: 5px 5px 0 0; border-top-right-radius: 18px; }
-    #scan-guide span::before { bottom: -3px; left: -3px; border-width: 0 0 5px 5px; border-bottom-left-radius: 18px; }
-    #scan-guide span::after { bottom: -3px; right: -3px; border-width: 0 5px 5px 0; border-bottom-right-radius: 18px; }
+    #scan-guide::before { top: -6px; left: -6px; border-width: 8px 0 0 8px; }
+    #scan-guide::after { top: -6px; right: -6px; border-width: 8px 8px 0 0; }
+    #scan-guide span::before { bottom: -6px; left: -6px; border-width: 0 0 8px 8px; }
+    #scan-guide span::after { bottom: -6px; right: -6px; border-width: 0 8px 8px 0; }
 
     #scan-text {
       position: absolute;
       width: 100%;
       text-align: center;
-      color: #FFFFFF;
-      bottom: -50px;
-      font-size: 13px;
-      font-weight: bold;
-      text-shadow: 0 2px 5px rgba(0,0,0,0.9);
-      letter-spacing: 1px;
+      color: #00FFCC;
+      bottom: -60px;
+      font-size: 10px;
+      line-height: 1.5;
+      text-shadow: 2px 2px 0px #000;
     }
 
     /* Game Container Overlay */
@@ -135,9 +149,7 @@
       width: 100%;
       height: 85vh;
       background: #09090d;
-      border-top-left-radius: 28px;
-      border-top-right-radius: 28px;
-      box-shadow: 0 -8px 32px rgba(0,0,0,0.6);
+      border-top: 6px solid #FF6D00; /* Sharp top border instead of radius */
       z-index: 100;
       transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
@@ -150,52 +162,39 @@
       bottom: 0;
     }
 
-    .card-handle {
-      width: 36px;
-      height: 5px;
-      background: #2c2c35;
-      border-radius: 10px;
-      margin: 12px auto 8px;
-      flex-shrink: 0;
-    }
-
     /* Header Panel */
     .game-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 20px 10px;
+      padding: 15px 20px 15px;
+      background: #000;
+      border-bottom: 4px solid #1a1a26;
       color: #fff;
     }
 
     .game-header h2 {
       margin: 0;
-      font-size: 18px;
-      background: linear-gradient(90deg, #FF9100, #D32F2F);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      font-weight: 800;
-      letter-spacing: 1px;
+      font-size: 12px;
+      color: #FF6D00;
+      text-shadow: 2px 2px 0px #D32F2F;
     }
 
     .hud-metrics {
       display: flex;
-      gap: 15px;
-      font-family: monospace;
-      font-size: 14px;
       align-items: center;
     }
 
     .metric-box {
-      background: #151520;
-      padding: 4px 10px;
-      border-radius: 6px;
-      border: 1px solid #2a2a3a;
+      background: #000;
+      padding: 8px;
+      border: 2px solid #00FFCC;
+      box-shadow: 2px 2px 0px #005544;
     }
 
     #score-text {
       color: #00FFCC;
-      text-shadow: 0 0 5px rgba(0, 255, 210, 0.3);
+      font-size: 10px;
     }
 
     /* Canvas wrappers and UI menus */
@@ -203,25 +202,29 @@
       position: relative;
       flex-grow: 1;
       width: 100%;
-      background: #050508;
+      background: #000;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      border-bottom: 4px solid #1a1a26;
     }
 
     #gameCanvas {
       display: block;
       max-width: 100%;
       max-height: 100%;
+      image-rendering: pixelated; /* Keeps canvas drawing sharp */
     }
 
-    /* Mobile Joystick Controller Container */
+    /* Mobile Joystick - Retro D-PAD Style */
     #controls-container {
       width: 100%;
-      height: 160px;
-      background: #0c0c14;
-      border-top: 1px solid #1a1a26;
+      height: 180px;
+      background: #09090d;
+      /* Grid background */
+      background-image: linear-gradient(#151524 2px, transparent 2px), linear-gradient(90deg, #151524 2px, transparent 2px);
+      background-size: 20px 20px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -229,69 +232,51 @@
       flex-shrink: 0;
     }
 
-    /* Joystick Outer Ring Stylings */
+    /* D-Pad Base */
     #joystick-boundary {
-      width: 110px;
-      height: 110px;
-      background: radial-gradient(circle, #151524 0%, #0d0d16 100%);
-      border: 3px solid #1c1c2e;
-      border-radius: 50%;
+      width: 140px;
+      height: 140px;
+      background: #111;
+      border: 4px solid #333;
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.6), 0 4px 15px rgba(0, 0, 0, 0.4);
+      box-shadow: 6px 6px 0px #000;
       touch-action: none;
+      /* Paint a cross inside */
+      background-image:
+        linear-gradient(to right, transparent 33%, #222 33%, #222 67%, transparent 67%),
+        linear-gradient(to bottom, transparent 33%, #222 33%, #222 67%, transparent 67%);
     }
 
-    #joystick-boundary::before, #joystick-boundary::after {
-      content: '';
-      position: absolute;
-      background: #2a2a3e;
-      pointer-events: none;
-    }
-    #joystick-boundary::before {
-      width: 80%;
-      height: 2px;
-      top: 50%;
-      left: 10%;
-      transform: translateY(-50%);
-      background: linear-gradient(90deg, #33334d 0%, transparent 20%, transparent 80%, #33334d 100%);
-    }
-    #joystick-boundary::after {
-      width: 2px;
-      height: 80%;
-      left: 50%;
-      top: 10%;
-      transform: translateX(-50%);
-      background: linear-gradient(180deg, #33334d 0%, transparent 20%, transparent 80%, #33334d 100%);
-    }
-
-    /* Joystick Inner Thumb Stick */
+    /* Square Pixel Stick */
     #joystick-stick {
-      width: 46px;
-      height: 46px;
-      background: radial-gradient(circle, #ff7b00 0%, #e64a19 100%);
-      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      background: #FF6D00;
+      border: 4px solid #FFF;
       position: absolute;
       touch-action: none;
-      box-shadow: 0 4px 10px rgba(230, 74, 25, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+      box-shadow: 4px 4px 0px #D32F2F;
       will-change: transform;
       z-index: 2;
     }
 
     #joystick-stick:active {
-      background: radial-gradient(circle, #ff9100 0%, #ff3d00 100%);
-      box-shadow: 0 0 20px rgba(255, 61, 0, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.6);
+      background: #00FFCC;
+      box-shadow: 2px 2px 0px #008877;
+      border-color: #FFF;
     }
 
+    /* Overlays */
     .game-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(4, 4, 6, 0.94);
+      background: rgba(0, 0, 0, 0.9);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -300,53 +285,68 @@
       z-index: 105;
       text-align: center;
       padding: 24px;
+      border: 4px solid #1a1a26;
     }
 
     .game-overlay h3 {
       margin: 0;
-      font-weight: 800;
-      letter-spacing: 1.5px;
+      font-size: 16px;
+      line-height: 1.4;
+      color: #FF6D00;
+      text-shadow: 3px 3px 0px #D32F2F;
     }
 
     .game-overlay p {
-      line-height: 1.6;
+      font-size: 9px;
+      line-height: 1.8;
+      color: #ccc;
     }
 
+    /* Pixel Arcade Button */
     .game-overlay button {
-      background: linear-gradient(90deg, #D32F2F, #FF6D00);
+      font-family: 'Press Start 2P', monospace;
+      background: #FF6D00;
       color: white;
-      border: none;
-      padding: 14px 35px;
-      border-radius: 30px;
-      font-size: 15px;
-      font-weight: bold;
+      border: 4px solid #FFF;
+      padding: 15px 25px;
+      font-size: 12px;
       cursor: pointer;
-      margin-top: 20px;
-      box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+      margin-top: 25px;
+      box-shadow: 6px 6px 0px #D32F2F;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      transition: transform 0.1s ease;
+      transition: all 0.1s;
     }
 
     .game-overlay button:active {
-      transform: scale(0.95);
+      transform: translate(4px, 4px);
+      box-shadow: 2px 2px 0px #D32F2F;
     }
 
+    /* Pixel Legend */
     .legend-box {
       display: flex;
-      gap: 15px;
-      margin: 15px 0;
-      background: rgba(255,255,255,0.04);
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.08);
-      font-size: 11px;
+      flex-direction: column;
+      gap: 12px;
+      margin: 20px 0;
+      background: #111;
+      padding: 15px;
+      border: 2px solid #333;
+      font-size: 8px;
       text-align: left;
     }
+    
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 10px;
+    }
+
+    /* Square color indicators */
+    .legend-color {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #FFF;
     }
   </style>
 </head>
@@ -355,8 +355,8 @@
   <!-- Loading Animation Overlay -->
   <div id="loading">
     <div class="spinner"></div>
-    <h3 style="margin:0; letter-spacing: 1px;">PETROMIN AR</h3>
-    <p style="font-size:12px; opacity:0.8; margin-top:5px; font-weight: 500;">Accessing Camera Feed...</p>
+    <h3 style="margin:0; font-size:16px; text-shadow: 4px 4px 0px #000;">PETROMIN AR</h3>
+    <p class="blink-text" style="font-size:10px; margin-top:20px; color:#FFCDD2;">INSERT COIN...</p>
   </div>
 
   <!-- On-Screen Console for Diagnostics -->
@@ -365,23 +365,23 @@
   <!-- HUD Overlay -->
   <div id="scan-guide">
     <span></span>
-    <div id="scan-text">ALIGN WITH PETROMIN LOGO</div>
+    <div id="scan-text">SYS.SCAN:<br><br>ALIGN LOGO TO HACK</div>
   </div>
 
   <!-- Interactive 2D Game Drawer -->
   <div id="game-container">
-    <div class="card-handle"></div>
+    
     <div class="game-header">
-      <h2>PETRO-PIPELINE</h2>
+      <h2>PETRO-HACK</h2>
       <div class="hud-metrics">
-        <div class="metric-box" id="score-text">FLOW: 0 L</div>
+        <div class="metric-box" id="score-text">DATA: 0</div>
       </div>
     </div>
 
     <div class="canvas-wrapper">
       <canvas id="gameCanvas"></canvas>
       
-      <!-- Interactive Joystick Controls -->
+      <!-- Interactive Retro D-Pad -->
       <div id="controls-container">
         <div id="joystick-boundary">
           <div id="joystick-stick"></div>
@@ -390,29 +390,29 @@
 
       <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
-        <h3 style="font-size: 26px; color: #FF6D00; margin-bottom: 5px;">PETROMIN PIPELINE</h3>
-        <p style="font-size: 12px; color: #aaa; margin: 0 0 10px;">Connect pipeline segments using the joystick below.</p>
+        <h3 style="color: #FF6D00;">PIPELINE BYPASS</h3>
+        <p style="margin-top: 15px; color: #FFF;">Use D-PAD to route data.<br>Avoid crossing your own stream.</p>
         
         <div class="legend-box">
           <div class="legend-item">
-            <span style="display:inline-block; width:12px; height:12px; background:#FF9100; border-radius:50%; box-shadow: 0 0 6px #FF9100;"></span>
-            <span>Oil Drop (+10 Liters)</span>
+            <span class="legend-color" style="background:#FF9100; border-color:#FF3D00;"></span>
+            <span>Standard Node (+10)</span>
           </div>
           <div class="legend-item">
-            <span style="display:inline-block; width:12px; height:12px; background:#00FFCC; border-radius:50%; box-shadow: 0 0 6px #00FFCC;"></span>
-            <span>Premium Fuel (Speed up)</span>
+            <span class="legend-color" style="background:#00FFCC; border-color:#008877;"></span>
+            <span>Overclock Node (Speedup)</span>
           </div>
         </div>
 
-        <button onclick="startGame()">START FLOW</button>
+        <button onclick="startGame()">INITIATE</button>
       </div>
 
       <!-- Game Over Overlay -->
       <div id="gameover-overlay" class="game-overlay" style="display: none;">
-        <h3 style="font-size: 28px; color: #D32F2F;">PIPELINE LEAK!</h3>
-        <p id="final-score-text" style="font-size: 16px; margin: 8px 0; color: #00FFCC;">Total Flow: 0 Liters</p>
-        <p id="game-over-reason" style="font-size: 12px; color: #aaa; max-width: 250px; margin-bottom: 10px;"></p>
-        <button onclick="startGame()">REPAIR & RETRY</button>
+        <h3 style="color: #D32F2F;">FATAL ERROR!</h3>
+        <p id="final-score-text" style="font-size: 10px; margin: 15px 0; color: #00FFCC;">Total Data: 0</p>
+        <p id="game-over-reason" style="font-size: 8px; color: #777; max-width: 250px; margin-bottom: 20px;"></p>
+        <button onclick="startGame()">REBOOT</button>
       </div>
     </div>
   </div>
@@ -439,7 +439,7 @@
 
     function showRuntimeError(message) {
       errConsole.style.display = 'block';
-      errConsole.innerHTML += '<strong>[System Check]:</strong> ' + message + '<br>';
+      errConsole.innerHTML += '<strong>[ERR]:</strong> ' + message + '<br>';
     }
 
     window.onerror = function(msg, url, line) {
@@ -467,7 +467,7 @@
     });
 
     sceneEl.addEventListener("arError", () => {
-      showRuntimeError(`Engine could not download target descriptor database at: ${window.location.origin}${targetUrl}`);
+      showRuntimeError(`DB_MISSING: ${window.location.origin}${targetUrl}`);
     });
 
     targetEntity.addEventListener("targetFound", () => {
@@ -477,7 +477,7 @@
     });
 
     // ==========================================================
-    //       PETROMIN PIPELINE GAME & CONTROL ENGINE
+    //       RETRO PIXEL PIPELINE GAME ENGINE
     // ==========================================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -487,7 +487,7 @@
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
 
-    const gridSize = 20; 
+    const gridSize = 16; // 16x16 chunky grid for better pixel look
     let tileCountX = 0;
     let tileCountY = 0;
     let gridCellWidth = 0;
@@ -503,23 +503,23 @@
     let gameActive = false;
     let lastTickTime = 0;
     
-    // Game loops speeds: baseline is snappy, drops speed loop updates up to a rapid 45ms step
-    let baseSpeed = 120; 
+    let baseSpeed = 130; 
     let currentSpeed = baseSpeed;
 
     function initCanvas() {
       const wrapper = canvas.parentElement;
       const rect = wrapper.getBoundingClientRect();
-      const margin = 16;
-      const size = Math.min(rect.width - margin, rect.height - margin);
+      const margin = 20;
+      // Keep canvas perfectly square for even pixel distribution
+      const size = Math.floor(Math.min(rect.width - margin, rect.height - margin));
       
       canvas.width = size;
       canvas.height = size;
 
       tileCountX = gridSize;
       tileCountY = gridSize;
-      gridCellWidth = size / tileCountX;
-      gridCellHeight = size / tileCountY;
+      gridCellWidth = Math.floor(size / tileCountX);
+      gridCellHeight = Math.floor(size / tileCountY);
 
       if (gameActive) {
         drawGame();
@@ -546,7 +546,7 @@
     }
 
     // ==========================================================
-    //      HIGH-SPEED REQUESTANIMATIONFRAME JOYSTICK ENGINE
+    //      HIGH-SPEED D-PAD ENGINE
     // ==========================================================
     const joystickBoundary = document.getElementById('joystick-boundary');
     const joystickStick = document.getElementById('joystick-stick');
@@ -556,8 +556,8 @@
     let dragStartY = 0;
     let currentPointerX = 0;
     let currentPointerY = 0;
-    const maxDistance = 42; 
-    const deadzone = 8; // Lower deadzone for hyper-fast, low-effort swipes
+    const maxDistance = 45; // Boundaries for square base
+    const deadzone = 8; 
 
     function handleStart(clientX, clientY) {
       isDragging = true;
@@ -568,41 +568,39 @@
       currentPointerY = clientY;
       
       joystickStick.style.transition = 'none';
+      
+      // Calculate initial snap if starting click off-center
+      processJoystickPhysics(); 
     }
 
-    // Hardware accelerated paint cycle handles positions before input threads stall
+    // Snap to 4 directions visually like a real D-Pad
     function processJoystickPhysics() {
       if (!isDragging) return;
 
       const deltaX = currentPointerX - dragStartX;
       const deltaY = currentPointerY - dragStartY;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      
+      // Force orthographic snapping visually for the retro theme
+      let targetX = 0;
+      let targetY = 0;
 
-      let targetX = deltaX;
-      let targetY = deltaY;
-
-      if (distance > maxDistance) {
-        targetX = (deltaX / distance) * maxDistance;
-        targetY = (deltaY / distance) * maxDistance;
+      if (Math.abs(deltaX) > deadzone || Math.abs(deltaY) > deadzone) {
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+           targetX = deltaX > 0 ? maxDistance : -maxDistance;
+           setDirection(targetX > 0 ? 1 : -1, 0);
+        } else {
+           targetY = deltaY > 0 ? maxDistance : -maxDistance;
+           setDirection(0, targetY > 0 ? 1 : -1);
+        }
       }
 
       joystickStick.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
-
-      if (distance > deadzone) {
-        if (Math.abs(targetX) > Math.abs(targetY)) {
-          setDirection(targetX > 0 ? 1 : -1, 0);
-        } else {
-          setDirection(0, targetY > 0 ? 1 : -1);
-        }
-      }
-      
       requestAnimationFrame(processJoystickPhysics);
     }
 
     joystickBoundary.addEventListener('touchstart', (e) => {
       e.preventDefault();
       handleStart(e.touches[0].clientX, e.touches[0].clientY);
-      requestAnimationFrame(processJoystickPhysics);
     }, { passive: false });
 
     window.addEventListener('touchmove', (e) => {
@@ -615,14 +613,13 @@
     window.addEventListener('touchend', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      joystickStick.style.transition = 'transform 0.1s steps(2)'; // Chunky snap back
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     }, { passive: true });
 
     // Desktop Mouse Handlers
     joystickBoundary.addEventListener('mousedown', (e) => {
       handleStart(e.clientX, e.clientY);
-      requestAnimationFrame(processJoystickPhysics);
     });
 
     window.addEventListener('mousemove', (e) => {
@@ -635,7 +632,7 @@
     window.addEventListener('mouseup', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.12s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      joystickStick.style.transition = 'transform 0.1s steps(2)';
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     });
 
@@ -673,20 +670,19 @@
       currentSpeed = baseSpeed;
 
       pipeline = [
-        { x: 5, y: 10 },
-        { x: 4, y: 10 },
-        { x: 3, y: 10 }
+        { x: 5, y: 8 },
+        { x: 4, y: 8 },
+        { x: 3, y: 8 }
       ];
 
       spawnOilDrop();
       gameActive = true;
-      scoreText.innerText = `FLOW: 0 L`;
+      scoreText.innerText = `DATA: 0`;
       
       lastTickTime = performance.now();
       requestAnimationFrame(gameMainLoop);
     }
 
-    // High performance timestamps game engine loop layout
     function gameMainLoop(currentTime) {
       if (!gameActive) return;
 
@@ -694,7 +690,6 @@
 
       const delta = currentTime - lastTickTime;
       if (delta >= currentSpeed) {
-        // Drop runtime rounding tracking leaks
         lastTickTime = currentTime - (delta % currentSpeed);
         updateGame();
         drawGame();
@@ -720,7 +715,7 @@
       const head = { x: nextX, y: nextY };
 
       if (pipeline.some(segment => segment.x === head.x && segment.y === head.y)) {
-        triggerLeak("Pipeline pressure overloaded by self-intersection!");
+        triggerLeak("SYSTEM CRASH: Stream intersected.");
         return;
       }
 
@@ -729,12 +724,12 @@
       if (head.x === oilDrop.x && head.y === oilDrop.y) {
         if (oilDrop.special) {
           score += 25;
-          currentSpeed = Math.max(45, currentSpeed - 12); 
+          currentSpeed = Math.max(50, currentSpeed - 12); 
         } else {
           score += 10;
-          currentSpeed = Math.max(45, currentSpeed - 5);
+          currentSpeed = Math.max(50, currentSpeed - 5);
         }
-        scoreText.innerText = `FLOW: ${score} L`;
+        scoreText.innerText = `DATA: ${score}`;
         spawnOilDrop();
       } else {
         pipeline.pop();
@@ -743,18 +738,18 @@
 
     function triggerLeak(reason) {
       gameActive = false;
-      finalScoreText.innerText = `Total Flow: ${score} Liters`;
+      finalScoreText.innerText = `Total Data: ${score}`;
       gameOverReason.innerText = reason;
       gameoverOverlay.style.display = 'flex';
     }
 
+    // Completely Pixelated Rendering System (No anti-aliasing/blur/arcs)
     function drawGame() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+      // Clear with dark pixel grid background
       ctx.fillStyle = '#050508';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.strokeStyle = '#111116';
       ctx.lineWidth = 1;
       for (let i = 0; i <= tileCountX; i++) {
         ctx.beginPath();
@@ -769,69 +764,58 @@
         ctx.stroke();
       }
 
-      // Draw Oil Target Food
+      // Draw Pixel Food (Square Block)
       ctx.save();
-      const fx = oilDrop.x * gridCellWidth + gridCellWidth / 2;
-      const fy = oilDrop.y * gridCellHeight + gridCellHeight / 2;
-      const fRadius = (gridCellWidth / 2) - 2;
+      const fx = oilDrop.x * gridCellWidth;
+      const fy = oilDrop.y * gridCellHeight;
+      const fOffset = 2; // 2px margin for grid gap
 
-      ctx.shadowBlur = 10;
       if (oilDrop.special) {
         ctx.fillStyle = '#00FFCC';
-        ctx.shadowColor = '#00FFCC';
       } else {
         ctx.fillStyle = '#FF9100';
-        ctx.shadowColor = '#FF9100';
       }
 
-      ctx.beginPath();
-      ctx.moveTo(fx, fy - fRadius);
-      ctx.bezierCurveTo(fx + fRadius, fy, fx + fRadius, fy + fRadius, fx, fy + fRadius);
-      ctx.bezierCurveTo(fx - fRadius, fy + fRadius, fx - fRadius, fy, fx, fy - fRadius);
-      ctx.closePath();
-      ctx.fill();
+      ctx.fillRect(fx + fOffset, fy + fOffset, gridCellWidth - fOffset*2, gridCellHeight - fOffset*2);
+      
+      // Add a chunky highlight pixel to the food
+      ctx.fillStyle = '#FFF';
+      ctx.fillRect(fx + fOffset + 2, fy + fOffset + 2, 4, 4);
       ctx.restore();
 
-      // Draw Pipeline Body
+      // Draw Pixel Pipeline Body
       pipeline.forEach((segment, index) => {
-        ctx.save();
         const sx = segment.x * gridCellWidth;
         const sy = segment.y * gridCellHeight;
-        const innerOffset = 2;
+        const sOffset = 1; // 1px gap between body segments for chunky look
 
         if (index === 0) {
+          // Head segment
           ctx.fillStyle = '#D32F2F';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#D32F2F';
-          ctx.beginPath();
-          ctx.roundRect(sx + innerOffset, sy + innerOffset, gridCellWidth - innerOffset*2, gridCellHeight - innerOffset*2, 6);
-          ctx.fill();
+          ctx.fillRect(sx + sOffset, sy + sOffset, gridCellWidth - sOffset*2, gridCellHeight - sOffset*2);
 
+          // Pixel Eyes (Squares instead of arcs)
           ctx.fillStyle = '#FFFFFF';
-          ctx.beginPath();
+          const eyeSize = 4;
+          
           if (dx === 1) { 
-            ctx.arc(sx + gridCellWidth - 6, sy + 6, 2.5, 0, Math.PI*2);
-            ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
+            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + 2, eyeSize, eyeSize);
+            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
           } else if (dx === -1) { 
-            ctx.arc(sx + 6, sy + 6, 2.5, 0, Math.PI*2);
-            ctx.arc(sx + 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
+            ctx.fillRect(sx + 2, sy + 2, eyeSize, eyeSize);
+            ctx.fillRect(sx + 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
           } else if (dy === 1) { 
-            ctx.arc(sx + 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
-            ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, 2.5, 0, Math.PI*2);
+            ctx.fillRect(sx + 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
+            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
           } else { 
-            ctx.arc(sx + 6, sy + 6, 2.5, 0, Math.PI*2);
-            ctx.arc(sx + gridCellWidth - 6, sy + 6, 2.5, 0, Math.PI*2);
+            ctx.fillRect(sx + 2, sy + 2, eyeSize, eyeSize);
+            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + 2, eyeSize, eyeSize);
           }
-          ctx.fill();
         } else {
+          // Body segments
           ctx.fillStyle = '#FF6D00';
-          ctx.shadowBlur = 6;
-          ctx.shadowColor = '#FF6D00';
-          ctx.beginPath();
-          ctx.roundRect(sx + innerOffset, sy + innerOffset, gridCellWidth - innerOffset*2, gridCellHeight - innerOffset*2, 4);
-          ctx.fill();
+          ctx.fillRect(sx + sOffset, sy + sOffset, gridCellWidth - sOffset*2, gridCellHeight - sOffset*2);
         }
-        ctx.restore();
       });
     }
   </script>
