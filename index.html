@@ -10,7 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <!-- Classic 8-bit Pixel Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2=family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     /* Prevent rubber-banding or text selection highlighting on fast taps */
@@ -391,7 +391,7 @@
       <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
         <h3 style="color: #FF6D00;">PIPELINE BYPASS</h3>
-        <p style="margin-top: 15px; color: #FFF;">Use D-PAD to route data.<br>Avoid crossing your own stream.</p>
+        <p style="margin-top: 15px; color: #FFF;">Use D-PAD to route data.<br>Target goal: 150 DATA nodes.</p>
         
         <div class="legend-box">
           <div class="legend-item">
@@ -413,6 +413,13 @@
         <p id="final-score-text" style="font-size: 10px; margin: 15px 0; color: #00FFCC;">Total Data: 0</p>
         <p id="game-over-reason" style="font-size: 8px; color: #777; max-width: 250px; margin-bottom: 20px;"></p>
         <button onclick="startGame()">REBOOT</button>
+      </div>
+
+      <!-- Victory Overlay -->
+      <div id="win-overlay" class="game-overlay" style="display: none; border-color: #00FFCC;">
+        <h3 style="color: #00FFCC; text-shadow: 3px 3px 0px #005544;">HACK COMPLETE!</h3>
+        <p style="margin-top: 15px; color: #FFF; font-size: 10px; line-height: 1.8;">Core database bypassed.<br>Petromin terminal clear.</p>
+        <button onclick="startGame()" style="background: #00FFCC; color: #000; box-shadow: 6px 6px 0px #005544;">PLAY AGAIN</button>
       </div>
     </div>
   </div>
@@ -483,6 +490,7 @@
     const ctx = canvas.getContext('2d');
     const startOverlay = document.getElementById('start-overlay');
     const gameoverOverlay = document.getElementById('gameover-overlay');
+    const winOverlay = document.getElementById('win-overlay');
     const scoreText = document.getElementById('score-text');
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
@@ -661,6 +669,7 @@
     function startGame() {
       startOverlay.style.display = 'none';
       gameoverOverlay.style.display = 'none';
+      winOverlay.style.display = 'none';
       initCanvas();
 
       score = 0;
@@ -730,6 +739,13 @@
           currentSpeed = Math.max(50, currentSpeed - 5);
         }
         scoreText.innerText = `DATA: ${score}`;
+
+        // Win evaluation condition
+        if (score >= 150) {
+          triggerWin();
+          return;
+        }
+
         spawnOilDrop();
       } else {
         pipeline.pop();
@@ -741,6 +757,11 @@
       finalScoreText.innerText = `Total Data: ${score}`;
       gameOverReason.innerText = reason;
       gameoverOverlay.style.display = 'flex';
+    }
+
+    function triggerWin() {
+      gameActive = false;
+      winOverlay.style.display = 'flex';
     }
 
     // Completely Pixelated Rendering System (No anti-aliasing/blur/arcs)
