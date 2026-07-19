@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Petromin AR - Modernized Edition</title>
+  <title>Petromin AR - Retro Hackathon Edition</title>
   
   <!-- Stable A-Frame & MindAR CDN pairing -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <!-- Clean, Modern Geometric Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- Classic 8-bit Pixel Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     /* Prevent rubber-banding or text selection highlighting on fast taps */
@@ -24,13 +24,14 @@
     body {
       margin: 0;
       overflow: hidden;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Press Start 2P', monospace; /* Pixel Font */
       background-color: #000;
       -webkit-tap-highlight-color: transparent;
       touch-action: none;
+      image-rendering: pixelated; /* Force pixelated rendering for the whole page */
     }
 
-    /* Smooth Loading Screen */
+    /* Pixelated Loading Screen */
     #loading {
       position: fixed;
       top: 0;
@@ -38,7 +39,9 @@
       width: 100%;
       height: 100%;
       background: #D32F2F;
-      background-image: radial-gradient(circle at center, #ef5350 0%, #b71c1c 100%);
+      /* Retro grid background pattern */
+      background-image: linear-gradient(#b71c1c 1px, transparent 1px), linear-gradient(90deg, #b71c1c 1px, transparent 1px);
+      background-size: 20px 20px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -50,48 +53,47 @@
       text-align: center;
     }
 
-    /* Smooth Spinner */
+    /* 8-bit Blocky Spinner */
     .spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid rgba(255, 255, 255, 0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
+      background: #FFF;
       margin-bottom: 25px;
-      animation: spin 1s linear infinite;
+      animation: spin-step 1s steps(4) infinite; /* Snappy, low-framerate rotation */
+      box-shadow: 6px 6px 0px #000;
     }
 
-    @keyframes spin {
+    @keyframes spin-step {
       to { transform: rotate(360deg); }
     }
 
     .blink-text {
-      animation: pulse 1.5s ease-in-out infinite;
+      animation: blinker 1s step-start infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.4; }
-      50% { opacity: 1; }
+    @keyframes blinker {
+      50% { opacity: 0; }
     }
 
     /* Diagnostics On-Screen Console */
     #error-console {
       display: none;
-      background: rgba(0, 0, 0, 0.95);
+      background: #000;
       color: #00FFCC;
       padding: 15px;
-      border: 2px solid #FF5252;
-      border-radius: 8px;
-      font-size: 11px;
+      border: 4px solid #FF5252;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
       position: absolute;
       bottom: 20px;
       left: 20px;
       right: 20px;
       z-index: 10000;
       word-break: break-all;
+      box-shadow: 4px 4px 0px rgba(255, 82, 82, 0.5);
     }
 
-    /* Scanner Target Bounds HUD - Smooth Style */
+    /* Scanner Target Bounds HUD - Blocky Style */
     #scan-guide {
       position: absolute;
       top: 45%;
@@ -99,8 +101,7 @@
       transform: translate(-50%, -50%);
       width: 260px;
       height: 260px;
-      border: 2px dashed rgba(255, 255, 255, 0.4);
-      border-radius: 24px;
+      border: 4px dashed rgba(255, 255, 255, 0.5); /* Thicker, sharper dash */
       pointer-events: none;
       z-index: 10;
     }
@@ -114,20 +115,20 @@
       display: block;
     }
 
-    /* Clean framing corners */
+    /* Sharp framing corners */
     #scan-guide::before, #scan-guide::after,
     #scan-guide span::before, #scan-guide span::after {
       content: "";
       position: absolute;
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       border-color: #00FFCC;
       border-style: solid;
     }
-    #scan-guide::before { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-top-left-radius: 16px; }
-    #scan-guide::after { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-top-right-radius: 16px; }
-    #scan-guide span::before { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 16px; }
-    #scan-guide span::after { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 16px; }
+    #scan-guide::before { top: -6px; left: -6px; border-width: 8px 0 0 8px; }
+    #scan-guide::after { top: -6px; right: -6px; border-width: 8px 8px 0 0; }
+    #scan-guide span::before { bottom: -6px; left: -6px; border-width: 0 0 8px 8px; }
+    #scan-guide span::after { bottom: -6px; right: -6px; border-width: 0 8px 8px 0; }
 
     #scan-text {
       position: absolute;
@@ -135,30 +136,26 @@
       text-align: center;
       color: #00FFCC;
       bottom: -60px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 1px;
+      font-size: 10px;
       line-height: 1.5;
+      text-shadow: 2px 2px 0px #000;
     }
 
-    /* Game Container Overlay - Smoothed Drawer */
+    /* Game Container Overlay */
     #game-container {
       position: fixed;
       bottom: -100%;
       left: 0;
       width: 100%;
       height: 85vh;
-      background: #0f1015;
-      border-top: 4px solid #FF6D00;
-      border-top-left-radius: 24px;
-      border-top-right-radius: 24px;
+      background: #09090d;
+      border-top: 6px solid #FF6D00; /* Sharp top border instead of radius */
       z-index: 100;
-      transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+      transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       padding-bottom: env(safe-area-inset-bottom);
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
     }
 
     #game-container.active {
@@ -170,18 +167,17 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 18px 24px;
-      background: #07080c;
-      border-bottom: 1px solid #1f2230;
+      padding: 15px 20px 15px;
+      background: #000;
+      border-bottom: 4px solid #1a1a26;
       color: #fff;
     }
 
     .game-header h2 {
       margin: 0;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+      font-size: 12px;
       color: #FF6D00;
+      text-shadow: 2px 2px 0px #D32F2F;
     }
 
     .hud-metrics {
@@ -190,16 +186,15 @@
     }
 
     .metric-box {
-      background: #141622;
-      padding: 6px 14px;
-      border-radius: 30px;
-      border: 1px solid rgba(0, 255, 204, 0.3);
+      background: #000;
+      padding: 8px;
+      border: 2px solid #00FFCC;
+      box-shadow: 2px 2px 0px #005544;
     }
 
     #score-text {
       color: #00FFCC;
-      font-size: 13px;
-      font-weight: 600;
+      font-size: 10px;
     }
 
     /* Canvas wrappers and UI menus */
@@ -207,63 +202,71 @@
       position: relative;
       flex-grow: 1;
       width: 100%;
-      background: #090a0f;
+      background: #000;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      border-bottom: 4px solid #1a1a26;
     }
 
     #gameCanvas {
       display: block;
       max-width: 100%;
       max-height: 100%;
+      image-rendering: pixelated; /* Keeps canvas drawing sharp */
     }
 
-    /* Modern Rounded Control Pad */
+    /* Mobile Joystick - Retro D-PAD Style */
     #controls-container {
       width: 100%;
       height: 180px;
-      background: #07080c;
+      background: #09090d;
+      /* Grid background */
+      background-image: linear-gradient(#151524 2px, transparent 2px), linear-gradient(90deg, #151524 2px, transparent 2px);
+      background-size: 20px 20px;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
       flex-shrink: 0;
-      border-top: 1px solid #1f2230;
     }
 
-    /* Radial Joystick Base */
+    /* D-Pad Base */
     #joystick-boundary {
-      width: 130px;
-      height: 130px;
-      background: #141622;
-      border-radius: 50%;
-      border: 2px solid #2a2e45;
+      width: 140px;
+      height: 140px;
+      background: #111;
+      border: 4px solid #333;
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: inset 0 4px 10px rgba(0,0,0,0.4);
+      box-shadow: 6px 6px 0px #000;
       touch-action: none;
+      /* Paint a cross inside */
+      background-image:
+        linear-gradient(to right, transparent 33%, #222 33%, #222 67%, transparent 67%),
+        linear-gradient(to bottom, transparent 33%, #222 33%, #222 67%, transparent 67%);
     }
 
-    /* Smooth Circular Thumbstick */
+    /* Square Pixel Stick */
     #joystick-stick {
-      width: 50px;
-      height: 50px;
-      background: linear-gradient(135deg, #FF8F00 0%, #FF6D00 100%);
-      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      background: #FF6D00;
+      border: 4px solid #FFF;
       position: absolute;
       touch-action: none;
-      box-shadow: 0 6px 16px rgba(255, 109, 0, 0.4);
+      box-shadow: 4px 4px 0px #D32F2F;
       will-change: transform;
       z-index: 2;
     }
 
     #joystick-stick:active {
-      background: linear-gradient(135deg, #00FFCC 0%, #00bfa5 100%);
-      box-shadow: 0 6px 16px rgba(0, 255, 204, 0.4);
+      background: #00FFCC;
+      box-shadow: 2px 2px 0px #008877;
+      border-color: #FFF;
     }
 
     /* Overlays */
@@ -273,7 +276,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(9, 10, 15, 0.96);
+      background: rgba(0, 0, 0, 0.9);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -281,70 +284,69 @@
       color: white;
       z-index: 105;
       text-align: center;
-      padding: 30px;
+      padding: 24px;
+      border: 4px solid #1a1a26;
     }
 
     .game-overlay h3 {
       margin: 0;
-      font-size: 22px;
-      font-weight: 800;
+      font-size: 16px;
+      line-height: 1.4;
       color: #FF6D00;
+      text-shadow: 3px 3px 0px #D32F2F;
     }
 
     .game-overlay p {
-      font-size: 13px;
-      line-height: 1.6;
-      color: #8fa0dd;
+      font-size: 9px;
+      line-height: 1.8;
+      color: #ccc;
     }
 
-    /* Clean Modern Button */
+    /* Pixel Arcade Button */
     .game-overlay button {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 700;
+      font-family: 'Press Start 2P', monospace;
       background: #FF6D00;
       color: white;
-      border: none;
-      border-radius: 30px;
-      padding: 16px 36px;
-      font-size: 14px;
-      letter-spacing: 0.5px;
+      border: 4px solid #FFF;
+      padding: 15px 25px;
+      font-size: 12px;
       cursor: pointer;
       margin-top: 25px;
-      box-shadow: 0 6px 20px rgba(255, 109, 0, 0.4);
-      transition: all 0.2s ease;
+      box-shadow: 6px 6px 0px #D32F2F;
+      text-transform: uppercase;
+      transition: all 0.1s;
     }
 
     .game-overlay button:active {
-      transform: scale(0.96);
-      box-shadow: 0 3px 10px rgba(255, 109, 0, 0.4);
+      transform: translate(4px, 4px);
+      box-shadow: 2px 2px 0px #D32F2F;
     }
 
-    /* Clean Legend Box */
+    /* Pixel Legend */
     .legend-box {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      margin: 24px 0;
-      background: #141622;
-      padding: 16px 24px;
-      border-radius: 16px;
-      border: 1px solid #2a2e45;
-      font-size: 12px;
+      gap: 12px;
+      margin: 20px 0;
+      background: #111;
+      padding: 15px;
+      border: 2px solid #333;
+      font-size: 8px;
       text-align: left;
     }
     
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
-    /* Circular smooth color indicators */
+    /* Square color indicators */
     .legend-color {
       display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #FFF;
     }
   </style>
 </head>
@@ -353,8 +355,8 @@
   <!-- Loading Animation Overlay -->
   <div id="loading">
     <div class="spinner"></div>
-    <h3 style="margin:0; font-size:20px; font-weight:800; letter-spacing:1px;">PETROMIN AR</h3>
-    <p class="blink-text" style="font-size:12px; margin-top:15px; color:#FFCDD2; font-weight:600;">CONNECTING TO SYSTEM...</p>
+    <h3 style="margin:0; font-size:16px; text-shadow: 4px 4px 0px #000;">PETROMIN AR</h3>
+    <p class="blink-text" style="font-size:10px; margin-top:20px; color:#FFCDD2;">INSERT COIN...</p>
   </div>
 
   <!-- On-Screen Console for Diagnostics -->
@@ -363,14 +365,14 @@
   <!-- HUD Overlay -->
   <div id="scan-guide">
     <span></span>
-    <div id="scan-text">ALIGN LOGO TO INITIALIZE</div>
+    <div id="scan-text">SYS.SCAN:<br><br>ALIGN LOGO TO HACK</div>
   </div>
 
-  <!-- Interactive Game Drawer -->
+  <!-- Interactive 2D Game Drawer -->
   <div id="game-container">
     
     <div class="game-header">
-      <h2>PETRO-STREAM</h2>
+      <h2>PETRO-HACK</h2>
       <div class="hud-metrics">
         <div class="metric-box" id="score-text">DATA: 0</div>
       </div>
@@ -379,7 +381,7 @@
     <div class="canvas-wrapper">
       <canvas id="gameCanvas"></canvas>
       
-      <!-- Interactive Radial D-Pad -->
+      <!-- Interactive Retro D-Pad -->
       <div id="controls-container">
         <div id="joystick-boundary">
           <div id="joystick-stick"></div>
@@ -388,29 +390,29 @@
 
       <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
-        <h3>PIPELINE BYPASS</h3>
-        <p style="margin-top: 10px;">Use the directional pad to route data streams.<br>Cross through outer walls safely.</p>
+        <h3 style="color: #FF6D00;">PIPELINE BYPASS</h3>
+        <p style="margin-top: 15px; color: #FFF;">Use D-PAD to route data.<br>Avoid crossing your own stream.</p>
         
         <div class="legend-box">
           <div class="legend-item">
-            <span class="legend-color" style="background:#FF9100; box-shadow: 0 0 8px #FF9100;"></span>
-            <span>Standard Node (+10 Score)</span>
+            <span class="legend-color" style="background:#FF9100; border-color:#FF3D00;"></span>
+            <span>Standard Node (+10)</span>
           </div>
           <div class="legend-item">
-            <span class="legend-color" style="background:#00FFCC; box-shadow: 0 0 8px #00FFCC;"></span>
-            <span>Overclock Node (Velocity Up)</span>
+            <span class="legend-color" style="background:#00FFCC; border-color:#008877;"></span>
+            <span>Overclock Node (Speedup)</span>
           </div>
         </div>
 
-        <button onclick="startGame()">INITIATE FLOW</button>
+        <button onclick="startGame()">INITIATE</button>
       </div>
 
       <!-- Game Over Overlay -->
       <div id="gameover-overlay" class="game-overlay" style="display: none;">
-        <h3 style="color: #FF5252;">STREAM INTERRUPTED</h3>
-        <p id="final-score-text" style="font-size: 16px; margin: 12px 0; color: #00FFCC; font-weight: 600;">Total Data: 0</p>
-        <p id="game-over-reason" style="font-size: 12px; color: #7f8fa4; max-width: 260px; margin-bottom: 20px;"></p>
-        <button onclick="startGame()" style="background:#FF5252; box-shadow: 0 6px 20px rgba(255, 82, 82, 0.4);">REBOOT SYSTEM</button>
+        <h3 style="color: #D32F2F;">FATAL ERROR!</h3>
+        <p id="final-score-text" style="font-size: 10px; margin: 15px 0; color: #00FFCC;">Total Data: 0</p>
+        <p id="game-over-reason" style="font-size: 8px; color: #777; max-width: 250px; margin-bottom: 20px;"></p>
+        <button onclick="startGame()">REBOOT</button>
       </div>
     </div>
   </div>
@@ -475,7 +477,7 @@
     });
 
     // ==========================================================
-    //       MODERN ANTI-ALIASED SMOOTH GAME ENGINE
+    //       RETRO PIXEL PIPELINE GAME ENGINE
     // ==========================================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -485,7 +487,7 @@
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
 
-    const gridSize = 16; 
+    const gridSize = 16; // 16x16 chunky grid for better pixel look
     let tileCountX = 0;
     let tileCountY = 0;
     let gridCellWidth = 0;
@@ -508,6 +510,7 @@
       const wrapper = canvas.parentElement;
       const rect = wrapper.getBoundingClientRect();
       const margin = 20;
+      // Keep canvas perfectly square for even pixel distribution
       const size = Math.floor(Math.min(rect.width - margin, rect.height - margin));
       
       canvas.width = size;
@@ -515,8 +518,8 @@
 
       tileCountX = gridSize;
       tileCountY = gridSize;
-      gridCellWidth = size / tileCountX;
-      gridCellHeight = size / tileCountY;
+      gridCellWidth = Math.floor(size / tileCountX);
+      gridCellHeight = Math.floor(size / tileCountY);
 
       if (gameActive) {
         drawGame();
@@ -543,7 +546,7 @@
     }
 
     // ==========================================================
-    //      HIGH-SPEED RADIAL TOUCH ENGINE
+    //      HIGH-SPEED D-PAD ENGINE
     // ==========================================================
     const joystickBoundary = document.getElementById('joystick-boundary');
     const joystickStick = document.getElementById('joystick-stick');
@@ -553,7 +556,7 @@
     let dragStartY = 0;
     let currentPointerX = 0;
     let currentPointerY = 0;
-    const maxDistance = 40; 
+    const maxDistance = 45; // Boundaries for square base
     const deadzone = 8; 
 
     function handleStart(clientX, clientY) {
@@ -565,29 +568,29 @@
       currentPointerY = clientY;
       
       joystickStick.style.transition = 'none';
+      
+      // Calculate initial snap if starting click off-center
       processJoystickPhysics(); 
     }
 
+    // Snap to 4 directions visually like a real D-Pad
     function processJoystickPhysics() {
       if (!isDragging) return;
 
       const deltaX = currentPointerX - dragStartX;
       const deltaY = currentPointerY - dragStartY;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       
+      // Force orthographic snapping visually for the retro theme
       let targetX = 0;
       let targetY = 0;
 
-      if (distance > deadzone) {
-        const angle = Math.atan2(deltaY, deltaX);
-        const limitedDist = Math.min(distance, maxDistance);
-        targetX = Math.cos(angle) * limitedDist;
-        targetY = Math.sin(angle) * limitedDist;
-
+      if (Math.abs(deltaX) > deadzone || Math.abs(deltaY) > deadzone) {
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
-           setDirection(deltaX > 0 ? 1 : -1, 0);
+           targetX = deltaX > 0 ? maxDistance : -maxDistance;
+           setDirection(targetX > 0 ? 1 : -1, 0);
         } else {
-           setDirection(deltaY > 0 ? 1 : -1, 0);
+           targetY = deltaY > 0 ? maxDistance : -maxDistance;
+           setDirection(0, targetY > 0 ? 1 : -1);
         }
       }
 
@@ -610,10 +613,11 @@
     window.addEventListener('touchend', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      joystickStick.style.transition = 'transform 0.1s steps(2)'; // Chunky snap back
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     }, { passive: true });
 
+    // Desktop Mouse Handlers
     joystickBoundary.addEventListener('mousedown', (e) => {
       handleStart(e.clientX, e.clientY);
     });
@@ -628,7 +632,7 @@
     window.addEventListener('mouseup', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      joystickStick.style.transition = 'transform 0.1s steps(2)';
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     });
 
@@ -711,7 +715,7 @@
       const head = { x: nextX, y: nextY };
 
       if (pipeline.some(segment => segment.x === head.x && segment.y === head.y)) {
-        triggerLeak("Stream intersected configuration threshold.");
+        triggerLeak("SYSTEM CRASH: Stream intersected.");
         return;
       }
 
@@ -739,14 +743,13 @@
       gameoverOverlay.style.display = 'flex';
     }
 
-    // Smooth Anti-Aliased Vector Rendering Logic
+    // Completely Pixelated Rendering System (No anti-aliasing/blur/arcs)
     function drawGame() {
-      // Clear with clean, subtly vibrant background color
-      ctx.fillStyle = '#090a0f';
+      // Clear with dark pixel grid background
+      ctx.fillStyle = '#050508';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Soft Grid lines
-      ctx.strokeStyle = '#141622';
+      ctx.strokeStyle = '#111116';
       ctx.lineWidth = 1;
       for (let i = 0; i <= tileCountX; i++) {
         ctx.beginPath();
@@ -761,67 +764,57 @@
         ctx.stroke();
       }
 
-      // Draw Smooth Circular Target Nodes
-      const cx = oilDrop.x * gridCellWidth + gridCellWidth / 2;
-      const cy = oilDrop.y * gridCellHeight + gridCellHeight / 2;
-      const r = (gridCellWidth / 2) - 2;
-
+      // Draw Pixel Food (Square Block)
       ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+      const fx = oilDrop.x * gridCellWidth;
+      const fy = oilDrop.y * gridCellHeight;
+      const fOffset = 2; // 2px margin for grid gap
+
       if (oilDrop.special) {
         ctx.fillStyle = '#00FFCC';
-        ctx.shadowColor = '#00FFCC';
-        ctx.shadowBlur = 10;
       } else {
         ctx.fillStyle = '#FF9100';
-        ctx.shadowColor = '#FF9100';
-        ctx.shadowBlur = 10;
       }
-      ctx.fill();
+
+      ctx.fillRect(fx + fOffset, fy + fOffset, gridCellWidth - fOffset*2, gridCellHeight - fOffset*2);
       
-      // Soft Inner Core Glow
-      ctx.beginPath();
-      ctx.arc(cx - r/3, cy - r/3, r/3, 0, 2 * Math.PI);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-      ctx.fill();
+      // Add a chunky highlight pixel to the food
+      ctx.fillStyle = '#FFF';
+      ctx.fillRect(fx + fOffset + 2, fy + fOffset + 2, 4, 4);
       ctx.restore();
 
-      // Draw Smooth Interconnected Stream Segments
+      // Draw Pixel Pipeline Body
       pipeline.forEach((segment, index) => {
-        const sx = segment.x * gridCellWidth + gridCellWidth / 2;
-        const sy = segment.y * gridCellHeight + gridCellHeight / 2;
-        const radius = (gridCellWidth / 2) - 1;
-
-        ctx.beginPath();
-        ctx.arc(sx, sy, radius, 0, 2 * Math.PI);
+        const sx = segment.x * gridCellWidth;
+        const sy = segment.y * gridCellHeight;
+        const sOffset = 1; // 1px gap between body segments for chunky look
 
         if (index === 0) {
-          // Stream Head
+          // Head segment
           ctx.fillStyle = '#D32F2F';
-          ctx.fill();
+          ctx.fillRect(sx + sOffset, sy + sOffset, gridCellWidth - sOffset*2, gridCellHeight - sOffset*2);
 
-          // Smooth Radial Eyes
+          // Pixel Eyes (Squares instead of arcs)
           ctx.fillStyle = '#FFFFFF';
-          const eRadius = 2.5;
+          const eyeSize = 4;
           
           if (dx === 1) { 
-            ctx.beginPath(); ctx.arc(sx + radius/2, sy - radius/3, eRadius, 0, 2 * Math.PI); ctx.fill();
-            ctx.beginPath(); ctx.arc(sx + radius/2, sy + radius/3, eRadius, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + 2, eyeSize, eyeSize);
+            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
           } else if (dx === -1) { 
-            ctx.beginPath(); ctx.arc(sx - radius/2, sy - radius/3, eRadius, 0, 2 * Math.PI); ctx.fill();
-            ctx.beginPath(); ctx.arc(sx - radius/2, sy + radius/3, eRadius, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillRect(sx + 2, sy + 2, eyeSize, eyeSize);
+            ctx.fillRect(sx + 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
           } else if (dy === 1) { 
-            ctx.beginPath(); ctx.arc(sx - radius/3, sy + radius/2, eRadius, 0, 2 * Math.PI); ctx.fill();
-            ctx.beginPath(); ctx.arc(sx + radius/3, sy + radius/2, eRadius, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillRect(sx + 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
+            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
           } else { 
-            ctx.beginPath(); ctx.arc(sx - radius/3, sy - radius/2, eRadius, 0, 2 * Math.PI); ctx.fill();
-            ctx.beginPath(); ctx.arc(sx + radius/3, sy - radius/2, eRadius, 0, 2 * Math.PI); ctx.fill();
+            ctx.fillRect(sx + 2, sy + 2, eyeSize, eyeSize);
+            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + 2, eyeSize, eyeSize);
           }
         } else {
-          // Stream Body
+          // Body segments
           ctx.fillStyle = '#FF6D00';
-          ctx.fill();
+          ctx.fillRect(sx + sOffset, sy + sOffset, gridCellWidth - sOffset*2, gridCellHeight - sOffset*2);
         }
       });
     }
