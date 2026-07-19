@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Petromin AR - Retro Hackathon Edition</title>
+  <title>Petromin AR - Neo Cyber Edition</title>
   
   <!-- Stable A-Frame & MindAR CDN pairing -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <!-- Classic 8-bit Pixel Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <!-- Sleek Cyberpunk/Sci-Fi Geometric Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
     /* Prevent rubber-banding or text selection highlighting on fast taps */
@@ -24,24 +24,20 @@
     body {
       margin: 0;
       overflow: hidden;
-      font-family: 'Press Start 2P', monospace; /* Pixel Font */
+      font-family: 'Orbitron', sans-serif;
       background-color: #000;
       -webkit-tap-highlight-color: transparent;
       touch-action: none;
-      image-rendering: pixelated; /* Force pixelated rendering for the whole page */
     }
 
-    /* Pixelated Loading Screen */
+    /* Refined Loading Screen */
     #loading {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #D32F2F;
-      /* Retro grid background pattern */
-      background-image: linear-gradient(#b71c1c 1px, transparent 1px), linear-gradient(90deg, #b71c1c 1px, transparent 1px);
-      background-size: 20px 20px;
+      background: linear-gradient(135deg, #110000 0%, #050508 100%);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -53,47 +49,53 @@
       text-align: center;
     }
 
-    /* 8-bit Blocky Spinner */
+    /* Modern Circular Ring Spinner with Cyber Glow */
     .spinner {
-      width: 40px;
-      height: 40px;
-      background: #FFF;
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(213, 47, 47, 0.15);
+      border-radius: 50%;
+      border-top-color: #FF6D00;
+      animation: spin 0.8s linear infinite;
       margin-bottom: 25px;
-      animation: spin-step 1s steps(4) infinite; /* Snappy, low-framerate rotation */
-      box-shadow: 6px 6px 0px #000;
+      box-shadow: 0 0 15px rgba(255, 109, 0, 0.4);
     }
 
-    @keyframes spin-step {
+    @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    .blink-text {
-      animation: blinker 1s step-start infinite;
+    .pulse-text {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #FFCDD2;
+      animation: pulse 1.5s ease-in-out infinite;
     }
 
-    @keyframes blinker {
-      50% { opacity: 0; }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
     }
 
     /* Diagnostics On-Screen Console */
     #error-console {
       display: none;
-      background: #000;
+      background: rgba(5, 5, 8, 0.95);
       color: #00FFCC;
       padding: 15px;
-      border: 4px solid #FF5252;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
+      border: 1px solid #FF5252;
+      border-radius: 8px;
+      font-size: 10px;
       position: absolute;
       bottom: 20px;
       left: 20px;
       right: 20px;
       z-index: 10000;
       word-break: break-all;
-      box-shadow: 4px 4px 0px rgba(255, 82, 82, 0.5);
+      box-shadow: 0 4px 20px rgba(255, 82, 82, 0.15);
     }
 
-    /* Scanner Target Bounds HUD - Blocky Style */
+    /* Clean Scanner Target Bounds HUD */
     #scan-guide {
       position: absolute;
       top: 45%;
@@ -101,7 +103,8 @@
       transform: translate(-50%, -50%);
       width: 260px;
       height: 260px;
-      border: 4px dashed rgba(255, 255, 255, 0.5); /* Thicker, sharper dash */
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px;
       pointer-events: none;
       z-index: 10;
     }
@@ -115,30 +118,30 @@
       display: block;
     }
 
-    /* Sharp framing corners */
+    /* Precision sleek framing corners */
     #scan-guide::before, #scan-guide::after,
     #scan-guide span::before, #scan-guide span::after {
       content: "";
       position: absolute;
-      width: 40px;
-      height: 40px;
+      width: 30px;
+      height: 30px;
       border-color: #00FFCC;
       border-style: solid;
     }
-    #scan-guide::before { top: -6px; left: -6px; border-width: 8px 0 0 8px; }
-    #scan-guide::after { top: -6px; right: -6px; border-width: 8px 8px 0 0; }
-    #scan-guide span::before { bottom: -6px; left: -6px; border-width: 0 0 8px 8px; }
-    #scan-guide span::after { bottom: -6px; right: -6px; border-width: 0 8px 8px 0; }
+    #scan-guide::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-top-left-radius: 12px; }
+    #scan-guide::after { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-top-right-radius: 12px; }
+    #scan-guide span::before { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-bottom-left-radius: 12px; }
+    #scan-guide span::after { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-bottom-right-radius: 12px; }
 
     #scan-text {
       position: absolute;
       width: 100%;
       text-align: center;
-      color: #00FFCC;
-      bottom: -60px;
-      font-size: 10px;
-      line-height: 1.5;
-      text-shadow: 2px 2px 0px #000;
+      color: #FFFFFF;
+      bottom: -55px;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
     }
 
     /* Game Container Overlay */
@@ -148,8 +151,10 @@
       left: 0;
       width: 100%;
       height: 85vh;
-      background: #09090d;
-      border-top: 6px solid #FF6D00; /* Sharp top border instead of radius */
+      background: #06060a;
+      border-top: 2px solid rgba(255, 109, 0, 0.4);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
       z-index: 100;
       transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
@@ -167,17 +172,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px 15px;
-      background: #000;
-      border-bottom: 4px solid #1a1a26;
+      padding: 16px 20px;
+      background: #0b0b12;
+      border-bottom: 1px solid #161622;
       color: #fff;
     }
 
     .game-header h2 {
       margin: 0;
-      font-size: 12px;
+      font-size: 14px;
+      letter-spacing: 1.5px;
       color: #FF6D00;
-      text-shadow: 2px 2px 0px #D32F2F;
+      text-shadow: 0 0 10px rgba(255, 109, 0, 0.3);
     }
 
     .hud-metrics {
@@ -186,45 +192,45 @@
     }
 
     .metric-box {
-      background: #000;
-      padding: 8px;
-      border: 2px solid #00FFCC;
-      box-shadow: 2px 2px 0px #005544;
+      background: #020204;
+      padding: 6px 12px;
+      border: 1px solid #00FFCC;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0, 255, 204, 0.15);
     }
 
     #score-text {
       color: #00FFCC;
-      font-size: 10px;
+      font-size: 11px;
+      letter-spacing: 1px;
     }
 
-    /* Canvas wrappers and UI menus */
+    /* Canvas Area */
     .canvas-wrapper {
       position: relative;
       flex-grow: 1;
       width: 100%;
-      background: #000;
+      background: #020204;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      border-bottom: 4px solid #1a1a26;
+      border-bottom: 1px solid #161622;
     }
 
     #gameCanvas {
       display: block;
       max-width: 100%;
       max-height: 100%;
-      image-rendering: pixelated; /* Keeps canvas drawing sharp */
     }
 
-    /* Mobile Joystick - Retro D-PAD Style */
+    /* Refined D-Pad Controls (Sleek Rounded Squares) */
     #controls-container {
       width: 100%;
       height: 180px;
-      background: #09090d;
-      /* Grid background */
-      background-image: linear-gradient(#151524 2px, transparent 2px), linear-gradient(90deg, #151524 2px, transparent 2px);
-      background-size: 20px 20px;
+      background: #0b0b12;
+      background-image: linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+      background-size: 24px 24px;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -232,51 +238,58 @@
       flex-shrink: 0;
     }
 
-    /* D-Pad Base */
+    /* Rounded Square D-Pad Base */
     #joystick-boundary {
-      width: 140px;
-      height: 140px;
-      background: #111;
-      border: 4px solid #333;
+      width: 130px;
+      height: 130px;
+      background: #07070c;
+      border: 1px solid #222232;
+      border-radius: 24px;
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: 6px 6px 0px #000;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8), 0 4px 20px rgba(0,0,0,0.4);
       touch-action: none;
-      /* Paint a cross inside */
-      background-image:
-        linear-gradient(to right, transparent 33%, #222 33%, #222 67%, transparent 67%),
-        linear-gradient(to bottom, transparent 33%, #222 33%, #222 67%, transparent 67%);
     }
 
-    /* Square Pixel Stick */
+    /* Cross hair indicators */
+    #joystick-boundary::before, #joystick-boundary::after {
+      content: '';
+      position: absolute;
+      background: #181826;
+      pointer-events: none;
+    }
+    #joystick-boundary::before { width: 70%; height: 1px; }
+    #joystick-boundary::after { width: 1px; height: 70%; }
+
+    /* Modern Control Stick Capsule */
     #joystick-stick {
-      width: 44px;
-      height: 44px;
-      background: #FF6D00;
-      border: 4px solid #FFF;
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, #FF9100 0%, #FF6D00 100%);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 12px;
       position: absolute;
       touch-action: none;
-      box-shadow: 4px 4px 0px #D32F2F;
+      box-shadow: 0 4px 15px rgba(255, 109, 0, 0.4);
       will-change: transform;
       z-index: 2;
     }
 
     #joystick-stick:active {
-      background: #00FFCC;
-      box-shadow: 2px 2px 0px #008877;
-      border-color: #FFF;
+      background: linear-gradient(135deg, #00FFCC 0%, #00b38f 100%);
+      box-shadow: 0 0 20px rgba(0, 255, 204, 0.6);
     }
 
-    /* Overlays */
+    /* Overlay Interfaces */
     .game-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(3, 3, 5, 0.96);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -285,68 +298,72 @@
       z-index: 105;
       text-align: center;
       padding: 24px;
-      border: 4px solid #1a1a26;
     }
 
     .game-overlay h3 {
       margin: 0;
-      font-size: 16px;
-      line-height: 1.4;
+      font-size: 18px;
+      letter-spacing: 2px;
       color: #FF6D00;
-      text-shadow: 3px 3px 0px #D32F2F;
+      text-shadow: 0 0 12px rgba(255, 109, 0, 0.3);
     }
 
     .game-overlay p {
-      font-size: 9px;
+      font-size: 11px;
       line-height: 1.8;
-      color: #ccc;
+      color: #8a8a9e;
+      letter-spacing: 0.5px;
     }
 
-    /* Pixel Arcade Button */
+    /* Premium Glow Button */
     .game-overlay button {
-      font-family: 'Press Start 2P', monospace;
-      background: #FF6D00;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(90deg, #D32F2F, #FF6D00);
       color: white;
-      border: 4px solid #FFF;
-      padding: 15px 25px;
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 14px 32px;
+      border-radius: 10px;
       font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1px;
       cursor: pointer;
       margin-top: 25px;
-      box-shadow: 6px 6px 0px #D32F2F;
-      text-transform: uppercase;
-      transition: all 0.1s;
+      box-shadow: 0 4px 20px rgba(211, 47, 47, 0.4);
+      transition: all 0.15s ease;
     }
 
     .game-overlay button:active {
-      transform: translate(4px, 4px);
-      box-shadow: 2px 2px 0px #D32F2F;
+      transform: scale(0.97);
+      box-shadow: 0 2px 10px rgba(211, 47, 47, 0.2);
     }
 
-    /* Pixel Legend */
+    /* Modern Info Box */
     .legend-box {
       display: flex;
       flex-direction: column;
       gap: 12px;
       margin: 20px 0;
-      background: #111;
-      padding: 15px;
-      border: 2px solid #333;
-      font-size: 8px;
+      background: #0b0b12;
+      padding: 16px;
+      border: 1px solid #1c1c2e;
+      border-radius: 12px;
+      font-size: 10px;
       text-align: left;
     }
     
     .legend-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      color: #a0a0b5;
     }
 
-    /* Square color indicators */
+    /* Smooth rounded tags */
     .legend-color {
       display: inline-block;
       width: 14px;
       height: 14px;
-      border: 2px solid #FFF;
+      border-radius: 4px;
     }
   </style>
 </head>
@@ -355,8 +372,8 @@
   <!-- Loading Animation Overlay -->
   <div id="loading">
     <div class="spinner"></div>
-    <h3 style="margin:0; font-size:16px; text-shadow: 4px 4px 0px #000;">PETROMIN AR</h3>
-    <p class="blink-text" style="font-size:10px; margin-top:20px; color:#FFCDD2;">INSERT COIN...</p>
+    <h3 style="margin:0; font-size:16px; letter-spacing: 3px;">PETROMIN AR</h3>
+    <p class="pulse-text" style="margin-top:15px;">INITIALIZING APP SYSTEM...</p>
   </div>
 
   <!-- On-Screen Console for Diagnostics -->
@@ -365,23 +382,22 @@
   <!-- HUD Overlay -->
   <div id="scan-guide">
     <span></span>
-    <div id="scan-text">SYS.SCAN:<br><br>ALIGN LOGO TO HACK</div>
+    <div id="scan-text">ALIGN WITH PETROMIN LOGO</div>
   </div>
 
-  <!-- Interactive 2D Game Drawer -->
+  <!-- Interactive Game Drawer -->
   <div id="game-container">
-    
     <div class="game-header">
-      <h2>PETRO-HACK</h2>
+      <h2>PETRO-BYPASS</h2>
       <div class="hud-metrics">
-        <div class="metric-box" id="score-text">DATA: 0</div>
+        <div class="metric-box" id="score-text">FLOW: 0 L</div>
       </div>
     </div>
 
     <div class="canvas-wrapper">
       <canvas id="gameCanvas"></canvas>
       
-      <!-- Interactive Retro D-Pad -->
+      <!-- Interactive Neo D-Pad -->
       <div id="controls-container">
         <div id="joystick-boundary">
           <div id="joystick-stick"></div>
@@ -390,29 +406,29 @@
 
       <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
-        <h3 style="color: #FF6D00;">PIPELINE BYPASS</h3>
-        <p style="margin-top: 15px; color: #FFF;">Use D-PAD to route data.<br>Avoid crossing your own stream.</p>
+        <h3>SYSTEM FLOW</h3>
+        <p style="margin-top: 12px;">Use the D-PAD frame to guide the stream.<br>Pass cleanly through walls to loop back.</p>
         
         <div class="legend-box">
           <div class="legend-item">
-            <span class="legend-color" style="background:#FF9100; border-color:#FF3D00;"></span>
-            <span>Standard Node (+10)</span>
+            <span class="legend-color" style="background:#FF9100; box-shadow: 0 0 8px #FF9100;"></span>
+            <span>Standard Drop (+10 L)</span>
           </div>
           <div class="legend-item">
-            <span class="legend-color" style="background:#00FFCC; border-color:#008877;"></span>
-            <span>Overclock Node (Speedup)</span>
+            <span class="legend-color" style="background:#00FFCC; box-shadow: 0 0 8px #00FFCC;"></span>
+            <span>Premium Overclock (Speed Boost)</span>
           </div>
         </div>
 
-        <button onclick="startGame()">INITIATE</button>
+        <button onclick="startGame()">START INJECTION</button>
       </div>
 
       <!-- Game Over Overlay -->
       <div id="gameover-overlay" class="game-overlay" style="display: none;">
-        <h3 style="color: #D32F2F;">FATAL ERROR!</h3>
-        <p id="final-score-text" style="font-size: 10px; margin: 15px 0; color: #00FFCC;">Total Data: 0</p>
-        <p id="game-over-reason" style="font-size: 8px; color: #777; max-width: 250px; margin-bottom: 20px;"></p>
-        <button onclick="startGame()">REBOOT</button>
+        <h3 style="color: #D32F2F;">PRESSURE CORRUPTED</h3>
+        <p id="final-score-text" style="font-size: 14px; margin: 15px 0; color: #00FFCC;">Total Volume: 0 L</p>
+        <p id="game-over-reason" style="font-size: 10px; color: #6e6e82; max-width: 260px; margin-bottom: 15px;"></p>
+        <button onclick="startGame()">RESET ENGINE</button>
       </div>
     </div>
   </div>
@@ -439,7 +455,7 @@
 
     function showRuntimeError(message) {
       errConsole.style.display = 'block';
-      errConsole.innerHTML += '<strong>[ERR]:</strong> ' + message + '<br>';
+      errConsole.innerHTML += '<strong>[System Exception]:</strong> ' + message + '<br>';
     }
 
     window.onerror = function(msg, url, line) {
@@ -467,7 +483,7 @@
     });
 
     sceneEl.addEventListener("arError", () => {
-      showRuntimeError(`DB_MISSING: ${window.location.origin}${targetUrl}`);
+      showRuntimeError(`Failed to trace target file context map at path: ${targetUrl}`);
     });
 
     targetEntity.addEventListener("targetFound", () => {
@@ -477,7 +493,7 @@
     });
 
     // ==========================================================
-    //       RETRO PIXEL PIPELINE GAME ENGINE
+    //       MODERN SMOOTH HYBRID GAME ENGINE 
     // ==========================================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -487,7 +503,7 @@
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
 
-    const gridSize = 16; // 16x16 chunky grid for better pixel look
+    const gridSize = 18; 
     let tileCountX = 0;
     let tileCountY = 0;
     let gridCellWidth = 0;
@@ -510,7 +526,6 @@
       const wrapper = canvas.parentElement;
       const rect = wrapper.getBoundingClientRect();
       const margin = 20;
-      // Keep canvas perfectly square for even pixel distribution
       const size = Math.floor(Math.min(rect.width - margin, rect.height - margin));
       
       canvas.width = size;
@@ -518,8 +533,8 @@
 
       tileCountX = gridSize;
       tileCountY = gridSize;
-      gridCellWidth = Math.floor(size / tileCountX);
-      gridCellHeight = Math.floor(size / tileCountY);
+      gridCellWidth = size / tileCountX;
+      gridCellHeight = size / tileCountY;
 
       if (gameActive) {
         drawGame();
@@ -546,7 +561,7 @@
     }
 
     // ==========================================================
-    //      HIGH-SPEED D-PAD ENGINE
+    //      HIGH-SPEED MODERN SNAPPING CONTROL LOOP
     // ==========================================================
     const joystickBoundary = document.getElementById('joystick-boundary');
     const joystickStick = document.getElementById('joystick-stick');
@@ -556,7 +571,7 @@
     let dragStartY = 0;
     let currentPointerX = 0;
     let currentPointerY = 0;
-    const maxDistance = 45; // Boundaries for square base
+    const maxDistance = 42; 
     const deadzone = 8; 
 
     function handleStart(clientX, clientY) {
@@ -568,19 +583,15 @@
       currentPointerY = clientY;
       
       joystickStick.style.transition = 'none';
-      
-      // Calculate initial snap if starting click off-center
       processJoystickPhysics(); 
     }
 
-    // Snap to 4 directions visually like a real D-Pad
     function processJoystickPhysics() {
       if (!isDragging) return;
 
       const deltaX = currentPointerX - dragStartX;
       const deltaY = currentPointerY - dragStartY;
       
-      // Force orthographic snapping visually for the retro theme
       let targetX = 0;
       let targetY = 0;
 
@@ -594,6 +605,7 @@
         }
       }
 
+      // Smooth hardware accelerated visual shift
       joystickStick.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
       requestAnimationFrame(processJoystickPhysics);
     }
@@ -613,7 +625,7 @@
     window.addEventListener('touchend', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.1s steps(2)'; // Chunky snap back
+      joystickStick.style.transition = 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)'; 
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     }, { passive: true });
 
@@ -632,7 +644,7 @@
     window.addEventListener('mouseup', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.1s steps(2)';
+      joystickStick.style.transition = 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)';
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     });
 
@@ -670,14 +682,14 @@
       currentSpeed = baseSpeed;
 
       pipeline = [
-        { x: 5, y: 8 },
-        { x: 4, y: 8 },
-        { x: 3, y: 8 }
+        { x: 5, y: 9 },
+        { x: 4, y: 9 },
+        { x: 3, y: 9 }
       ];
 
       spawnOilDrop();
       gameActive = true;
-      scoreText.innerText = `DATA: 0`;
+      scoreText.innerText = `FLOW: 0 L`;
       
       lastTickTime = performance.now();
       requestAnimationFrame(gameMainLoop);
@@ -715,7 +727,7 @@
       const head = { x: nextX, y: nextY };
 
       if (pipeline.some(segment => segment.x === head.x && segment.y === head.y)) {
-        triggerLeak("SYSTEM CRASH: Stream intersected.");
+        triggerLeak("Loop overlap: pressure system compromised.");
         return;
       }
 
@@ -729,7 +741,7 @@
           score += 10;
           currentSpeed = Math.max(50, currentSpeed - 5);
         }
-        scoreText.innerText = `DATA: ${score}`;
+        scoreText.innerText = `FLOW: ${score} L`;
         spawnOilDrop();
       } else {
         pipeline.pop();
@@ -738,18 +750,18 @@
 
     function triggerLeak(reason) {
       gameActive = false;
-      finalScoreText.innerText = `Total Data: ${score}`;
+      finalScoreText.innerText = `Total Volume: ${score} L`;
       gameOverReason.innerText = reason;
       gameoverOverlay.style.display = 'flex';
     }
 
-    // Completely Pixelated Rendering System (No anti-aliasing/blur/arcs)
+    // Refined modern layout rendering method
     function drawGame() {
-      // Clear with dark pixel grid background
-      ctx.fillStyle = '#050508';
+      ctx.fillStyle = '#020204';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.strokeStyle = '#111116';
+      // Soft tech grid line traces
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)';
       ctx.lineWidth = 1;
       for (let i = 0; i <= tileCountX; i++) {
         ctx.beginPath();
@@ -764,58 +776,72 @@
         ctx.stroke();
       }
 
-      // Draw Pixel Food (Square Block)
+      // Draw Smooth Rounded Nodes (Targets)
       ctx.save();
       const fx = oilDrop.x * gridCellWidth;
       const fy = oilDrop.y * gridCellHeight;
-      const fOffset = 2; // 2px margin for grid gap
+      const fOffset = 3; 
+      const rw = gridCellWidth - fOffset * 2;
+      const rh = gridCellHeight - fOffset * 2;
 
+      ctx.shadowBlur = 10;
       if (oilDrop.special) {
         ctx.fillStyle = '#00FFCC';
+        ctx.shadowColor = '#00FFCC';
       } else {
         ctx.fillStyle = '#FF9100';
+        ctx.shadowColor = '#FF9100';
       }
 
-      ctx.fillRect(fx + fOffset, fy + fOffset, gridCellWidth - fOffset*2, gridCellHeight - fOffset*2);
-      
-      // Add a chunky highlight pixel to the food
-      ctx.fillStyle = '#FFF';
-      ctx.fillRect(fx + fOffset + 2, fy + fOffset + 2, 4, 4);
+      ctx.beginPath();
+      ctx.roundRect(fx + fOffset, fy + fOffset, rw, rh, 5); // Smooth corner radius
+      ctx.fill();
       ctx.restore();
 
-      // Draw Pixel Pipeline Body
+      // Draw Clean Rounded Pipeline Stream
       pipeline.forEach((segment, index) => {
+        ctx.save();
         const sx = segment.x * gridCellWidth;
         const sy = segment.y * gridCellHeight;
-        const sOffset = 1; // 1px gap between body segments for chunky look
+        const sOffset = 1.5;
+        const sw = gridCellWidth - sOffset * 2;
+        const sh = gridCellHeight - sOffset * 2;
 
         if (index === 0) {
-          // Head segment
+          // Head block configuration
           ctx.fillStyle = '#D32F2F';
-          ctx.fillRect(sx + sOffset, sy + sOffset, gridCellWidth - sOffset*2, gridCellHeight - sOffset*2);
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = '#D32F2F';
+          ctx.beginPath();
+          ctx.roundRect(sx + sOffset, sy + sOffset, sw, sh, 6);
+          ctx.fill();
 
-          // Pixel Eyes (Squares instead of arcs)
+          // Smooth targeted optical eyes
           ctx.fillStyle = '#FFFFFF';
-          const eyeSize = 4;
-          
+          const eyeRad = 2;
+          ctx.beginPath();
           if (dx === 1) { 
-            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + 2, eyeSize, eyeSize);
-            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
+            ctx.arc(sx + gridCellWidth - 6, sy + 6, eyeRad, 0, Math.PI*2);
+            ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, eyeRad, 0, Math.PI*2);
           } else if (dx === -1) { 
-            ctx.fillRect(sx + 2, sy + 2, eyeSize, eyeSize);
-            ctx.fillRect(sx + 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
+            ctx.arc(sx + 6, sy + 6, eyeRad, 0, Math.PI*2);
+            ctx.arc(sx + 6, sy + gridCellHeight - 6, eyeRad, 0, Math.PI*2);
           } else if (dy === 1) { 
-            ctx.fillRect(sx + 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
-            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + gridCellHeight - eyeSize - 2, eyeSize, eyeSize);
+            ctx.arc(sx + 6, sy + gridCellHeight - 6, eyeRad, 0, Math.PI*2);
+            ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, eyeRad, 0, Math.PI*2);
           } else { 
-            ctx.fillRect(sx + 2, sy + 2, eyeSize, eyeSize);
-            ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + 2, eyeSize, eyeSize);
+            ctx.arc(sx + 6, sy + 6, eyeRad, 0, Math.PI*2);
+            ctx.arc(sx + gridCellWidth - 6, sy + 6, eyeRad, 0, Math.PI*2);
           }
+          ctx.fill();
         } else {
-          // Body segments
+          // Body traces
           ctx.fillStyle = '#FF6D00';
-          ctx.fillRect(sx + sOffset, sy + sOffset, gridCellWidth - sOffset*2, gridCellHeight - sOffset*2);
+          ctx.beginPath();
+          ctx.roundRect(sx + sOffset, sy + sOffset, sw, sh, 4);
+          ctx.fill();
         }
+        ctx.restore();
       });
     }
   </script>
