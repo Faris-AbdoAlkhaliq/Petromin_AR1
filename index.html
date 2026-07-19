@@ -13,7 +13,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
-    /* Prevent rubber-banding or text selection highlighting on fast taps */
     * {
       box-sizing: border-box;
       -webkit-user-select: none;
@@ -24,11 +23,11 @@
     body {
       margin: 0;
       overflow: hidden;
-      font-family: 'Press Start 2P', monospace; /* Pixel Font */
+      font-family: 'Press Start 2P', monospace;
       background-color: #000;
       -webkit-tap-highlight-color: transparent;
       touch-action: none;
-      image-rendering: pixelated; /* Force pixelated rendering for the whole page */
+      image-rendering: pixelated;
     }
 
     /* Pixelated Loading Screen */
@@ -39,7 +38,6 @@
       width: 100%;
       height: 100%;
       background: #D32F2F;
-      /* Retro grid background pattern */
       background-image: linear-gradient(#b71c1c 1px, transparent 1px), linear-gradient(90deg, #b71c1c 1px, transparent 1px);
       background-size: 20px 20px;
       display: flex;
@@ -53,13 +51,12 @@
       text-align: center;
     }
 
-    /* 8-bit Blocky Spinner */
     .spinner {
       width: 40px;
       height: 40px;
       background: #FFF;
       margin-bottom: 25px;
-      animation: spin-step 1s steps(4) infinite; /* Snappy, low-framerate rotation */
+      animation: spin-step 1s steps(4) infinite;
       box-shadow: 6px 6px 0px #000;
     }
 
@@ -93,67 +90,76 @@
       box-shadow: 4px 4px 0px rgba(255, 82, 82, 0.5);
     }
 
-    /* Scanner Target Bounds HUD - FIXED PERFECT ALIGNMENT */
-    #scan-guide {
-      position: absolute;
-      top: 45%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 260px;
-      height: 260px;
-      border: 4px dashed #00FFCC; /* Sharp cyan dash bounding box */
-      pointer-events: none;
-      z-index: 10;
-      box-sizing: border-box;
-    }
-
-    #scan-guide span {
+    /* Target Scanner Layout Box Fixes */
+    #scan-hud-container {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      display: block;
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
 
-    /* Cleaned up styling corners to lock explicitly with the bounding border box */
-    #scan-guide::before, #scan-guide::after,
-    #scan-guide span::before, #scan-guide span::after {
+    .custom-scanner-box {
+      position: relative;
+      width: 260px;
+      height: 260px;
+      border: 4px dashed #00FFCC;
+      box-sizing: border-box;
+      margin-top: -50px; /* Positions frame cleanly in viewport center */
+    }
+
+    /* Perfectly aligned corner brackets locking onto the dashed frame borders */
+    .custom-scanner-box::before, .custom-scanner-box::after,
+    .custom-scanner-inner::before, .custom-scanner-inner::after {
       content: "";
       position: absolute;
-      width: 40px;
-      height: 40px;
-      border-color: #E0E0E0; /* Classic high-contrast light grey corners */
+      width: 36px;
+      height: 36px;
+      border-color: #E0E0E0;
       border-style: solid;
     }
-    #scan-guide::before { top: 0; left: 0; border-width: 8px 0 0 8px; }
-    #scan-guide::after { top: 0; right: 0; border-width: 8px 8px 0 0; }
-    #scan-guide span::before { bottom: 0; left: 0; border-width: 0 0 8px 8px; }
-    #scan-guide span::after { bottom: 0; right: 0; border-width: 0 8px 8px 0; }
-
-    /* Animated text HUD section below scanner */
-    #scan-text-container {
+    .custom-scanner-box::before { top: -4px; left: -4px; border-width: 8px 0 0 8px; }
+    .custom-scanner-box::after { top: -4px; right: -4px; border-width: 8px 8px 0 0; }
+    
+    .custom-scanner-inner {
       position: absolute;
       width: 100%;
+      height: 100%;
+      top: 0;
       left: 0;
-      bottom: -90px;
+    }
+    .custom-scanner-inner::before { bottom: -4px; left: -4px; border-width: 0 0 8px 8px; }
+    .custom-scanner-inner::after { bottom: -4px; right: -4px; border-width: 0 8px 8px 0; }
+
+    /* Animated text layout zone underneath the scanner frame grid */
+    #scan-text-container {
+      margin-top: 35px;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
+      width: 100%;
+      padding: 0 10px;
     }
 
     #scan-text {
       color: #00FFCC;
-      font-size: 10px;
+      font-size: 9px;
       line-height: 1.6;
       text-shadow: 2px 2px 0px #000;
       white-space: nowrap;
       overflow: hidden;
-      border-right: 3px solid #00FFCC; /* Typing cursor effect */
+      border-right: 3px solid #00FFCC;
+      display: inline-block;
       animation: 
-        typing-text 3.5s steps(30, end) infinite alternate,
+        typing-text 3.5s steps(28, end) infinite alternate,
         blink-cursor 0.75s step-end infinite;
     }
 
@@ -164,10 +170,9 @@
       animation: blinker 1.5s step-start infinite;
     }
 
-    /* Keyframe Animations for typewriter logic */
     @keyframes typing-text {
       from { width: 0% }
-      to { width: 100% }
+      to { width: 285px; } /* Exact character length width mapping */
     }
 
     @keyframes blink-cursor {
@@ -175,7 +180,12 @@
       50% { border-color: #00FFCC }
     }
 
-    /* Game Container Overlay */
+    /* Hide standard default MindAR built-in indicators to prevent overlap issues */
+    .mindar-ui-scanning-target {
+      display: none !important;
+    }
+
+    /* Game Container Overlay Drawer */
     #game-container {
       position: fixed;
       bottom: -100%;
@@ -196,12 +206,11 @@
       bottom: 0;
     }
 
-    /* Header Panel */
     .game-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px 15px;
+      padding: 15px 20px;
       background: #000;
       border-bottom: 4px solid #1a1a26;
       color: #fff;
@@ -209,14 +218,9 @@
 
     .game-header h2 {
       margin: 0;
-      font-size: 12px;
+      font-size: 11px;
       color: #FF6D00;
       text-shadow: 2px 2px 0px #D32F2F;
-    }
-
-    .hud-metrics {
-      display: flex;
-      align-items: center;
     }
 
     .metric-box {
@@ -228,10 +232,9 @@
 
     #score-text {
       color: #00FFCC;
-      font-size: 10px;
+      font-size: 9px;
     }
 
-    /* Canvas wrappers and UI menus */
     .canvas-wrapper {
       position: relative;
       flex-grow: 1;
@@ -251,57 +254,87 @@
       image-rendering: pixelated;
     }
 
-    /* Mobile Joystick - Retro D-PAD Style */
+    /* Retro Arrow Buttons Layout Control Unit */
     #controls-container {
       width: 100%;
-      height: 180px;
+      height: 190px;
       background: #09090d;
       background-image: linear-gradient(#151524 2px, transparent 2px), linear-gradient(90deg, #151524 2px, transparent 2px);
       background-size: 20px 20px;
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative;
       flex-shrink: 0;
     }
 
-    /* D-Pad Base */
-    #joystick-boundary {
-      width: 140px;
-      height: 140px;
+    /* D-PAD Cross Arrow Configuration Grid */
+    .dpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 54px);
+      grid-template-rows: repeat(3, 54px);
+      gap: 4px;
+      width: 170px;
+      height: 170px;
+    }
+
+    .dpad-btn {
       background: #111;
-      border: 4px solid #333;
-      position: relative;
+      border: 3px solid #333;
+      box-shadow: 4px 4px 0px #000;
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: 6px 6px 0px #000;
-      touch-action: none;
-      background-image:
-        linear-gradient(to right, transparent 33%, #222 33%, #222 67%, transparent 67%),
-        linear-gradient(to bottom, transparent 33%, #222 33%, #222 67%, transparent 67%);
+      cursor: pointer;
+      position: relative;
     }
 
-    /* Square Pixel Stick */
-    #joystick-stick {
-      width: 44px;
-      height: 44px;
-      background: #FF6D00;
-      border: 4px solid #FFF;
+    .dpad-btn::after {
+      content: "";
+      width: 0;
+      height: 0;
+      border-style: solid;
       position: absolute;
-      touch-action: none;
-      box-shadow: 4px 4px 0px #D32F2F;
-      will-change: transform;
-      z-index: 2;
     }
 
-    #joystick-stick:active {
+    /* Arrow shapes styling rules inside grid maps */
+    .btn-up { grid-column: 2; grid-row: 1; }
+    .btn-up::after {
+      border-width: 0 10px 14px 10px;
+      border-color: transparent transparent #FF6D00 transparent;
+    }
+
+    .btn-left { grid-column: 1; grid-row: 2; }
+    .btn-left::after {
+      border-width: 10px 14px 10px 0;
+      border-color: transparent #FF6D00 transparent transparent;
+    }
+
+    .btn-right { grid-column: 3; grid-row: 2; }
+    .btn-right::after {
+      border-width: 10px 0 10px 14px;
+      border-color: transparent transparent transparent #FF6D00;
+    }
+
+    .btn-down { grid-column: 2; grid-row: 3; }
+    .btn-down::after {
+      border-width: 14px 10px 0 10px;
+      border-color: #FF6D00 transparent transparent transparent;
+    }
+
+    /* Active Tap Press Responses */
+    .dpad-btn:active {
       background: #00FFCC;
-      box-shadow: 2px 2px 0px #008877;
-      border-color: #FFF;
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0px #000;
+    }
+    .dpad-btn:active::after {
+      border-top-color: #000 !important;
+      border-bottom-color: #000 !important;
+      border-left-color: #000 !important;
+      border-right-color: #000 !important;
     }
 
-    /* Overlays */
+    /* Overlays screen styling configuration cards */
     .game-overlay {
       position: absolute;
       top: 0;
@@ -322,7 +355,7 @@
 
     .game-overlay h3 {
       margin: 0;
-      font-size: 16px;
+      font-size: 14px;
       line-height: 1.4;
       color: #FF6D00;
       text-shadow: 3px 3px 0px #D32F2F;
@@ -334,19 +367,17 @@
       color: #ccc;
     }
 
-    /* Pixel Arcade Button */
     .game-overlay button {
       font-family: 'Press Start 2P', monospace;
       background: #FF6D00;
       color: white;
       border: 4px solid #FFF;
       padding: 15px 25px;
-      font-size: 12px;
+      font-size: 11px;
       cursor: pointer;
       margin-top: 25px;
       box-shadow: 6px 6px 0px #D32F2F;
       text-transform: uppercase;
-      transition: all 0.1s;
     }
 
     .game-overlay button:active {
@@ -354,7 +385,6 @@
       box-shadow: 2px 2px 0px #D32F2F;
     }
 
-    /* Pixel Legend */
     .legend-box {
       display: flex;
       flex-direction: column;
@@ -393,12 +423,14 @@
   <!-- On-Screen Console for Diagnostics -->
   <div id="error-console"></div>
 
-  <!-- HUD Overlay with fixed layout and typing animations -->
-  <div id="scan-guide">
-    <span></span>
+  <!-- Absolute Frame Container HUD - FIXED OVERLAP & ALIGNMENT -->
+  <div id="scan-hud-container">
+    <div class="custom-scanner-box">
+      <div class="custom-scanner-inner"></div>
+    </div>
     <div id="scan-text-container">
       <div id="scan-text">SCAN ANY PETROMIN LOGO AND ENJOY</div>
-      <div id="scan-funny-status">STATUS: SEARCHING FOR GOOD VIBES...</div>
+      <div id="scan-funny-status">STATUS: BROWSING LOCAL MEMES...</div>
     </div>
   </div>
 
@@ -414,17 +446,20 @@
     <div class="canvas-wrapper">
       <canvas id="gameCanvas"></canvas>
       
-      <!-- Interactive Retro D-Pad -->
+      <!-- Retro Cross Arrows Interface Layout Panel -->
       <div id="controls-container">
-        <div id="joystick-boundary">
-          <div id="joystick-stick"></div>
+        <div class="dpad-grid">
+          <div class="dpad-btn btn-up" id="arrow-up"></div>
+          <div class="dpad-btn btn-left" id="arrow-left"></div>
+          <div class="dpad-btn btn-right" id="arrow-right"></div>
+          <div class="dpad-btn btn-down" id="arrow-down"></div>
         </div>
       </div>
 
       <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
         <h3 style="color: #FF6D00;">PIPELINE BYPASS</h3>
-        <p style="margin-top: 15px; color: #FFF;">Use D-PAD to route data.<br>Target goal: 150 DATA nodes.</p>
+        <p style="margin-top: 15px; color: #FFF;">Use Arrow Buttons to route data.<br>Target goal: 150 DATA nodes.</p>
         
         <div class="legend-box">
           <div class="legend-item">
@@ -471,7 +506,7 @@
 
   <script>
     const loadingScreen = document.getElementById('loading');
-    const scanGuide = document.getElementById('scan-guide');
+    const scanHud = document.getElementById('scan-hud-container');
     const gameContainer = document.getElementById('game-container');
     const targetEntity = document.getElementById('ar-target');
     const sceneEl = document.getElementById('ar-scene');
@@ -512,7 +547,7 @@
 
     targetEntity.addEventListener("targetFound", () => {
       gameContainer.classList.add('active');
-      scanGuide.style.display = 'none';
+      scanHud.style.display = 'none';
       setTimeout(initCanvas, 400);
     });
 
@@ -586,90 +621,17 @@
     }
 
     // ==========================================================
-    //      HIGH-SPEED D-PAD ENGINE
+    //      RETRO DIRECT ARROW INTERACTION CAPTURE
     // ==========================================================
-    const joystickBoundary = document.getElementById('joystick-boundary');
-    const joystickStick = document.getElementById('joystick-stick');
-    
-    let isDragging = false;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let currentPointerX = 0;
-    let currentPointerY = 0;
-    const maxDistance = 45;
-    const deadzone = 8; 
+    document.getElementById('arrow-up').addEventListener('touchstart', (e) => { e.preventDefault(); setDirection(0, -1); });
+    document.getElementById('arrow-down').addEventListener('touchstart', (e) => { e.preventDefault(); setDirection(0, 1); });
+    document.getElementById('arrow-left').addEventListener('touchstart', (e) => { e.preventDefault(); setDirection(-1, 0); });
+    document.getElementById('arrow-right').addEventListener('touchstart', (e) => { e.preventDefault(); setDirection(1, 0); });
 
-    function handleStart(clientX, clientY) {
-      isDragging = true;
-      const rect = joystickBoundary.getBoundingClientRect();
-      dragStartX = rect.left + rect.width / 2;
-      dragStartY = rect.top + rect.height / 2;
-      currentPointerX = clientX;
-      currentPointerY = clientY;
-      
-      joystickStick.style.transition = 'none';
-      processJoystickPhysics(); 
-    }
-
-    function processJoystickPhysics() {
-      if (!isDragging) return;
-
-      const deltaX = currentPointerX - dragStartX;
-      const deltaY = currentPointerY - dragStartY;
-      
-      let targetX = 0;
-      let targetY = 0;
-
-      if (Math.abs(deltaX) > deadzone || Math.abs(deltaY) > deadzone) {
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-           targetX = deltaX > 0 ? maxDistance : -maxDistance;
-           setDirection(targetX > 0 ? 1 : -1, 0);
-        } else {
-           targetY = deltaY > 0 ? maxDistance : -maxDistance;
-           setDirection(0, targetY > 0 ? 1 : -1);
-        }
-      }
-
-      joystickStick.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
-      requestAnimationFrame(processJoystickPhysics);
-    }
-
-    joystickBoundary.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      handleStart(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: false });
-
-    window.addEventListener('touchmove', (e) => {
-      if (isDragging) {
-        currentPointerX = e.touches[0].clientX;
-        currentPointerY = e.touches[0].clientY;
-      }
-    }, { passive: true });
-
-    window.addEventListener('touchend', () => {
-      if (!isDragging) return;
-      isDragging = false;
-      joystickStick.style.transition = 'transform 0.1s steps(2)';
-      joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
-    }, { passive: true });
-
-    joystickBoundary.addEventListener('mousedown', (e) => {
-      handleStart(e.clientX, e.clientY);
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (isDragging) {
-        currentPointerX = e.clientX;
-        currentPointerY = e.clientY;
-      }
-    });
-
-    window.addEventListener('mouseup', () => {
-      if (!isDragging) return;
-      isDragging = false;
-      joystickStick.style.transition = 'transform 0.1s steps(2)';
-      joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
-    });
+    document.getElementById('arrow-up').addEventListener('mousedown', () => setDirection(0, -1));
+    document.getElementById('arrow-down').addEventListener('mousedown', () => setDirection(0, 1));
+    document.getElementById('arrow-left').addEventListener('mousedown', () => setDirection(-1, 0));
+    document.getElementById('arrow-right').addEventListener('mousedown', () => setDirection(1, 0));
 
     window.addEventListener('keydown', (e) => {
       switch(e.key) {
