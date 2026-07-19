@@ -10,7 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <!-- Classic 8-bit Pixel Font -->
-  <link href="https://fonts.googleapis.com/css2=family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
   <style>
     /* Prevent rubber-banding or text selection highlighting on fast taps */
@@ -93,7 +93,7 @@
       box-shadow: 4px 4px 0px rgba(255, 82, 82, 0.5);
     }
 
-    /* Scanner Target Bounds HUD - Blocky Style */
+    /* Scanner Target Bounds HUD - FIXED PERFECT ALIGNMENT */
     #scan-guide {
       position: absolute;
       top: 45%;
@@ -101,9 +101,10 @@
       transform: translate(-50%, -50%);
       width: 260px;
       height: 260px;
-      border: 4px dashed rgba(255, 255, 255, 0.5); /* Thicker, sharper dash */
+      border: 4px dashed #00FFCC; /* Sharp cyan dash bounding box */
       pointer-events: none;
       z-index: 10;
+      box-sizing: border-box;
     }
 
     #scan-guide span {
@@ -115,30 +116,63 @@
       display: block;
     }
 
-    /* Sharp framing corners */
+    /* Cleaned up styling corners to lock explicitly with the bounding border box */
     #scan-guide::before, #scan-guide::after,
     #scan-guide span::before, #scan-guide span::after {
       content: "";
       position: absolute;
       width: 40px;
       height: 40px;
-      border-color: #00FFCC;
+      border-color: #E0E0E0; /* Classic high-contrast light grey corners */
       border-style: solid;
     }
-    #scan-guide::before { top: -6px; left: -6px; border-width: 8px 0 0 8px; }
-    #scan-guide::after { top: -6px; right: -6px; border-width: 8px 8px 0 0; }
-    #scan-guide span::before { bottom: -6px; left: -6px; border-width: 0 0 8px 8px; }
-    #scan-guide span::after { bottom: -6px; right: -6px; border-width: 0 8px 8px 0; }
+    #scan-guide::before { top: 0; left: 0; border-width: 8px 0 0 8px; }
+    #scan-guide::after { top: 0; right: 0; border-width: 8px 8px 0 0; }
+    #scan-guide span::before { bottom: 0; left: 0; border-width: 0 0 8px 8px; }
+    #scan-guide span::after { bottom: 0; right: 0; border-width: 0 8px 8px 0; }
 
-    #scan-text {
+    /* Animated text HUD section below scanner */
+    #scan-text-container {
       position: absolute;
       width: 100%;
+      left: 0;
+      bottom: -90px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #scan-text {
       color: #00FFCC;
-      bottom: -60px;
       font-size: 10px;
-      line-height: 1.5;
+      line-height: 1.6;
       text-shadow: 2px 2px 0px #000;
+      white-space: nowrap;
+      overflow: hidden;
+      border-right: 3px solid #00FFCC; /* Typing cursor effect */
+      animation: 
+        typing-text 3.5s steps(30, end) infinite alternate,
+        blink-cursor 0.75s step-end infinite;
+    }
+
+    #scan-funny-status {
+      color: #FF6D00;
+      font-size: 7px;
+      text-shadow: 1px 1px 0px #000;
+      animation: blinker 1.5s step-start infinite;
+    }
+
+    /* Keyframe Animations for typewriter logic */
+    @keyframes typing-text {
+      from { width: 0% }
+      to { width: 100% }
+    }
+
+    @keyframes blink-cursor {
+      from, to { border-color: transparent }
+      50% { border-color: #00FFCC }
     }
 
     /* Game Container Overlay */
@@ -149,7 +183,7 @@
       width: 100%;
       height: 85vh;
       background: #09090d;
-      border-top: 6px solid #FF6D00; /* Sharp top border instead of radius */
+      border-top: 6px solid #FF6D00;
       z-index: 100;
       transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
@@ -214,7 +248,7 @@
       display: block;
       max-width: 100%;
       max-height: 100%;
-      image-rendering: pixelated; /* Keeps canvas drawing sharp */
+      image-rendering: pixelated;
     }
 
     /* Mobile Joystick - Retro D-PAD Style */
@@ -222,7 +256,6 @@
       width: 100%;
       height: 180px;
       background: #09090d;
-      /* Grid background */
       background-image: linear-gradient(#151524 2px, transparent 2px), linear-gradient(90deg, #151524 2px, transparent 2px);
       background-size: 20px 20px;
       display: flex;
@@ -244,7 +277,6 @@
       align-items: center;
       box-shadow: 6px 6px 0px #000;
       touch-action: none;
-      /* Paint a cross inside */
       background-image:
         linear-gradient(to right, transparent 33%, #222 33%, #222 67%, transparent 67%),
         linear-gradient(to bottom, transparent 33%, #222 33%, #222 67%, transparent 67%);
@@ -341,7 +373,6 @@
       gap: 10px;
     }
 
-    /* Square color indicators */
     .legend-color {
       display: inline-block;
       width: 14px;
@@ -362,15 +393,17 @@
   <!-- On-Screen Console for Diagnostics -->
   <div id="error-console"></div>
 
-  <!-- HUD Overlay -->
+  <!-- HUD Overlay with fixed layout and typing animations -->
   <div id="scan-guide">
     <span></span>
-    <div id="scan-text">SYS.SCAN:<br><br>ALIGN LOGO TO HACK</div>
+    <div id="scan-text-container">
+      <div id="scan-text">SCAN ANY PETROMIN LOGO AND ENJOY</div>
+      <div id="scan-funny-status">STATUS: SEARCHING FOR GOOD VIBES...</div>
+    </div>
   </div>
 
   <!-- Interactive 2D Game Drawer -->
   <div id="game-container">
-    
     <div class="game-header">
       <h2>PETRO-HACK</h2>
       <div class="hud-metrics">
@@ -495,7 +528,7 @@
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
 
-    const gridSize = 16; // 16x16 chunky grid for better pixel look
+    const gridSize = 16;
     let tileCountX = 0;
     let tileCountY = 0;
     let gridCellWidth = 0;
@@ -518,7 +551,6 @@
       const wrapper = canvas.parentElement;
       const rect = wrapper.getBoundingClientRect();
       const margin = 20;
-      // Keep canvas perfectly square for even pixel distribution
       const size = Math.floor(Math.min(rect.width - margin, rect.height - margin));
       
       canvas.width = size;
@@ -564,7 +596,7 @@
     let dragStartY = 0;
     let currentPointerX = 0;
     let currentPointerY = 0;
-    const maxDistance = 45; // Boundaries for square base
+    const maxDistance = 45;
     const deadzone = 8; 
 
     function handleStart(clientX, clientY) {
@@ -576,19 +608,15 @@
       currentPointerY = clientY;
       
       joystickStick.style.transition = 'none';
-      
-      // Calculate initial snap if starting click off-center
       processJoystickPhysics(); 
     }
 
-    // Snap to 4 directions visually like a real D-Pad
     function processJoystickPhysics() {
       if (!isDragging) return;
 
       const deltaX = currentPointerX - dragStartX;
       const deltaY = currentPointerY - dragStartY;
       
-      // Force orthographic snapping visually for the retro theme
       let targetX = 0;
       let targetY = 0;
 
@@ -621,11 +649,10 @@
     window.addEventListener('touchend', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.1s steps(2)'; // Chunky snap back
+      joystickStick.style.transition = 'transform 0.1s steps(2)';
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     }, { passive: true });
 
-    // Desktop Mouse Handlers
     joystickBoundary.addEventListener('mousedown', (e) => {
       handleStart(e.clientX, e.clientY);
     });
@@ -740,7 +767,6 @@
         }
         scoreText.innerText = `DATA: ${score}`;
 
-        // Win evaluation condition
         if (score >= 150) {
           triggerWin();
           return;
@@ -764,9 +790,7 @@
       winOverlay.style.display = 'flex';
     }
 
-    // Completely Pixelated Rendering System (No anti-aliasing/blur/arcs)
     function drawGame() {
-      // Clear with dark pixel grid background
       ctx.fillStyle = '#050508';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -785,11 +809,10 @@
         ctx.stroke();
       }
 
-      // Draw Pixel Food (Square Block)
       ctx.save();
       const fx = oilDrop.x * gridCellWidth;
       const fy = oilDrop.y * gridCellHeight;
-      const fOffset = 2; // 2px margin for grid gap
+      const fOffset = 2;
 
       if (oilDrop.special) {
         ctx.fillStyle = '#00FFCC';
@@ -798,24 +821,19 @@
       }
 
       ctx.fillRect(fx + fOffset, fy + fOffset, gridCellWidth - fOffset*2, gridCellHeight - fOffset*2);
-      
-      // Add a chunky highlight pixel to the food
       ctx.fillStyle = '#FFF';
       ctx.fillRect(fx + fOffset + 2, fy + fOffset + 2, 4, 4);
       ctx.restore();
 
-      // Draw Pixel Pipeline Body
       pipeline.forEach((segment, index) => {
         const sx = segment.x * gridCellWidth;
         const sy = segment.y * gridCellHeight;
-        const sOffset = 1; // 1px gap between body segments for chunky look
+        const sOffset = 1;
 
         if (index === 0) {
-          // Head segment
           ctx.fillStyle = '#D32F2F';
           ctx.fillRect(sx + sOffset, sy + sOffset, gridCellWidth - sOffset*2, gridCellHeight - sOffset*2);
 
-          // Pixel Eyes (Squares instead of arcs)
           ctx.fillStyle = '#FFFFFF';
           const eyeSize = 4;
           
@@ -833,7 +851,6 @@
             ctx.fillRect(sx + gridCellWidth - eyeSize - 2, sy + 2, eyeSize, eyeSize);
           }
         } else {
-          // Body segments
           ctx.fillStyle = '#FF6D00';
           ctx.fillRect(sx + sOffset, sy + sOffset, gridCellWidth - sOffset*2, gridCellHeight - sOffset*2);
         }
