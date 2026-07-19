@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Petromin AR - Neo Cyber Edition</title>
+  <title>Petromin AR - Modernized Edition</title>
   
   <!-- Stable A-Frame & MindAR CDN pairing -->
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <!-- Sleek Cyberpunk/Sci-Fi Geometric Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <!-- Clean, Modern Geometric Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 
   <style>
     /* Prevent rubber-banding or text selection highlighting on fast taps */
@@ -24,20 +24,21 @@
     body {
       margin: 0;
       overflow: hidden;
-      font-family: 'Orbitron', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #000;
       -webkit-tap-highlight-color: transparent;
       touch-action: none;
     }
 
-    /* Refined Loading Screen */
+    /* Smooth Loading Screen */
     #loading {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, #110000 0%, #050508 100%);
+      background: #D32F2F;
+      background-image: radial-gradient(circle at center, #ef5350 0%, #b71c1c 100%);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -49,53 +50,48 @@
       text-align: center;
     }
 
-    /* Modern Circular Ring Spinner with Cyber Glow */
+    /* Smooth Spinner */
     .spinner {
-      width: 50px;
-      height: 50px;
-      border: 3px solid rgba(213, 47, 47, 0.15);
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
       border-radius: 50%;
-      border-top-color: #FF6D00;
-      animation: spin 0.8s linear infinite;
       margin-bottom: 25px;
-      box-shadow: 0 0 15px rgba(255, 109, 0, 0.4);
+      animation: spin 1s linear infinite;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    .pulse-text {
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: #FFCDD2;
+    .blink-text {
       animation: pulse 1.5s ease-in-out infinite;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 0.6; }
+      0%, 100% { opacity: 0.4; }
       50% { opacity: 1; }
     }
 
     /* Diagnostics On-Screen Console */
     #error-console {
       display: none;
-      background: rgba(5, 5, 8, 0.95);
+      background: rgba(0, 0, 0, 0.95);
       color: #00FFCC;
       padding: 15px;
-      border: 1px solid #FF5252;
+      border: 2px solid #FF5252;
       border-radius: 8px;
-      font-size: 10px;
+      font-size: 11px;
       position: absolute;
       bottom: 20px;
       left: 20px;
       right: 20px;
       z-index: 10000;
       word-break: break-all;
-      box-shadow: 0 4px 20px rgba(255, 82, 82, 0.15);
     }
 
-    /* Clean Scanner Target Bounds HUD */
+    /* Scanner Target Bounds HUD - Smooth Style */
     #scan-guide {
       position: absolute;
       top: 45%;
@@ -103,8 +99,8 @@
       transform: translate(-50%, -50%);
       width: 260px;
       height: 260px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
+      border: 2px dashed rgba(255, 255, 255, 0.4);
+      border-radius: 24px;
       pointer-events: none;
       z-index: 10;
     }
@@ -118,7 +114,7 @@
       display: block;
     }
 
-    /* Precision sleek framing corners */
+    /* Clean framing corners */
     #scan-guide::before, #scan-guide::after,
     #scan-guide span::before, #scan-guide span::after {
       content: "";
@@ -128,39 +124,41 @@
       border-color: #00FFCC;
       border-style: solid;
     }
-    #scan-guide::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-top-left-radius: 12px; }
-    #scan-guide::after { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-top-right-radius: 12px; }
-    #scan-guide span::before { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-bottom-left-radius: 12px; }
-    #scan-guide span::after { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-bottom-right-radius: 12px; }
+    #scan-guide::before { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-top-left-radius: 16px; }
+    #scan-guide::after { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-top-right-radius: 16px; }
+    #scan-guide span::before { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 16px; }
+    #scan-guide span::after { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 16px; }
 
     #scan-text {
       position: absolute;
       width: 100%;
       text-align: center;
-      color: #FFFFFF;
-      bottom: -55px;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      color: #00FFCC;
+      bottom: -60px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      line-height: 1.5;
     }
 
-    /* Game Container Overlay */
+    /* Game Container Overlay - Smoothed Drawer */
     #game-container {
       position: fixed;
       bottom: -100%;
       left: 0;
       width: 100%;
       height: 85vh;
-      background: #06060a;
-      border-top: 2px solid rgba(255, 109, 0, 0.4);
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
+      background: #0f1015;
+      border-top: 4px solid #FF6D00;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
       z-index: 100;
-      transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
     }
 
     #game-container.active {
@@ -172,18 +170,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
-      background: #0b0b12;
-      border-bottom: 1px solid #161622;
+      padding: 18px 24px;
+      background: #07080c;
+      border-bottom: 1px solid #1f2230;
       color: #fff;
     }
 
     .game-header h2 {
       margin: 0;
-      font-size: 14px;
-      letter-spacing: 1.5px;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
       color: #FF6D00;
-      text-shadow: 0 0 10px rgba(255, 109, 0, 0.3);
     }
 
     .hud-metrics {
@@ -192,30 +190,28 @@
     }
 
     .metric-box {
-      background: #020204;
-      padding: 6px 12px;
-      border: 1px solid #00FFCC;
-      border-radius: 6px;
-      box-shadow: 0 0 10px rgba(0, 255, 204, 0.15);
+      background: #141622;
+      padding: 6px 14px;
+      border-radius: 30px;
+      border: 1px solid rgba(0, 255, 204, 0.3);
     }
 
     #score-text {
       color: #00FFCC;
-      font-size: 11px;
-      letter-spacing: 1px;
+      font-size: 13px;
+      font-weight: 600;
     }
 
-    /* Canvas Area */
+    /* Canvas wrappers and UI menus */
     .canvas-wrapper {
       position: relative;
       flex-grow: 1;
       width: 100%;
-      background: #020204;
+      background: #090a0f;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      border-bottom: 1px solid #161622;
     }
 
     #gameCanvas {
@@ -224,72 +220,60 @@
       max-height: 100%;
     }
 
-    /* Refined D-Pad Controls (Sleek Rounded Squares) */
+    /* Modern Rounded Control Pad */
     #controls-container {
       width: 100%;
       height: 180px;
-      background: #0b0b12;
-      background-image: linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
-      background-size: 24px 24px;
+      background: #07080c;
       display: flex;
       justify-content: center;
       align-items: center;
       position: relative;
       flex-shrink: 0;
+      border-top: 1px solid #1f2230;
     }
 
-    /* Rounded Square D-Pad Base */
+    /* Radial Joystick Base */
     #joystick-boundary {
       width: 130px;
       height: 130px;
-      background: #07070c;
-      border: 1px solid #222232;
-      border-radius: 24px;
+      background: #141622;
+      border-radius: 50%;
+      border: 2px solid #2a2e45;
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8), 0 4px 20px rgba(0,0,0,0.4);
+      box-shadow: inset 0 4px 10px rgba(0,0,0,0.4);
       touch-action: none;
     }
 
-    /* Cross hair indicators */
-    #joystick-boundary::before, #joystick-boundary::after {
-      content: '';
-      position: absolute;
-      background: #181826;
-      pointer-events: none;
-    }
-    #joystick-boundary::before { width: 70%; height: 1px; }
-    #joystick-boundary::after { width: 1px; height: 70%; }
-
-    /* Modern Control Stick Capsule */
+    /* Smooth Circular Thumbstick */
     #joystick-stick {
-      width: 46px;
-      height: 46px;
-      background: linear-gradient(135deg, #FF9100 0%, #FF6D00 100%);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 12px;
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #FF8F00 0%, #FF6D00 100%);
+      border-radius: 50%;
       position: absolute;
       touch-action: none;
-      box-shadow: 0 4px 15px rgba(255, 109, 0, 0.4);
+      box-shadow: 0 6px 16px rgba(255, 109, 0, 0.4);
       will-change: transform;
       z-index: 2;
     }
 
     #joystick-stick:active {
-      background: linear-gradient(135deg, #00FFCC 0%, #00b38f 100%);
-      box-shadow: 0 0 20px rgba(0, 255, 204, 0.6);
+      background: linear-gradient(135deg, #00FFCC 0%, #00bfa5 100%);
+      box-shadow: 0 6px 16px rgba(0, 255, 204, 0.4);
     }
 
-    /* Overlay Interfaces */
+    /* Overlays */
     .game-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(3, 3, 5, 0.96);
+      background: rgba(9, 10, 15, 0.96);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -297,57 +281,55 @@
       color: white;
       z-index: 105;
       text-align: center;
-      padding: 24px;
+      padding: 30px;
     }
 
     .game-overlay h3 {
       margin: 0;
-      font-size: 18px;
-      letter-spacing: 2px;
+      font-size: 22px;
+      font-weight: 800;
       color: #FF6D00;
-      text-shadow: 0 0 12px rgba(255, 109, 0, 0.3);
     }
 
     .game-overlay p {
-      font-size: 11px;
-      line-height: 1.8;
-      color: #8a8a9e;
-      letter-spacing: 0.5px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #8fa0dd;
     }
 
-    /* Premium Glow Button */
+    /* Clean Modern Button */
     .game-overlay button {
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(90deg, #D32F2F, #FF6D00);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      background: #FF6D00;
       color: white;
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 14px 32px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: bold;
-      letter-spacing: 1px;
+      border: none;
+      border-radius: 30px;
+      padding: 16px 36px;
+      font-size: 14px;
+      letter-spacing: 0.5px;
       cursor: pointer;
       margin-top: 25px;
-      box-shadow: 0 4px 20px rgba(211, 47, 47, 0.4);
-      transition: all 0.15s ease;
+      box-shadow: 0 6px 20px rgba(255, 109, 0, 0.4);
+      transition: all 0.2s ease;
     }
 
     .game-overlay button:active {
-      transform: scale(0.97);
-      box-shadow: 0 2px 10px rgba(211, 47, 47, 0.2);
+      transform: scale(0.96);
+      box-shadow: 0 3px 10px rgba(255, 109, 0, 0.4);
     }
 
-    /* Modern Info Box */
+    /* Clean Legend Box */
     .legend-box {
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin: 20px 0;
-      background: #0b0b12;
-      padding: 16px;
-      border: 1px solid #1c1c2e;
-      border-radius: 12px;
-      font-size: 10px;
+      gap: 14px;
+      margin: 24px 0;
+      background: #141622;
+      padding: 16px 24px;
+      border-radius: 16px;
+      border: 1px solid #2a2e45;
+      font-size: 12px;
       text-align: left;
     }
     
@@ -355,15 +337,14 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      color: #a0a0b5;
     }
 
-    /* Smooth rounded tags */
+    /* Circular smooth color indicators */
     .legend-color {
       display: inline-block;
-      width: 14px;
-      height: 14px;
-      border-radius: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
     }
   </style>
 </head>
@@ -372,8 +353,8 @@
   <!-- Loading Animation Overlay -->
   <div id="loading">
     <div class="spinner"></div>
-    <h3 style="margin:0; font-size:16px; letter-spacing: 3px;">PETROMIN AR</h3>
-    <p class="pulse-text" style="margin-top:15px;">INITIALIZING APP SYSTEM...</p>
+    <h3 style="margin:0; font-size:20px; font-weight:800; letter-spacing:1px;">PETROMIN AR</h3>
+    <p class="blink-text" style="font-size:12px; margin-top:15px; color:#FFCDD2; font-weight:600;">CONNECTING TO SYSTEM...</p>
   </div>
 
   <!-- On-Screen Console for Diagnostics -->
@@ -382,22 +363,23 @@
   <!-- HUD Overlay -->
   <div id="scan-guide">
     <span></span>
-    <div id="scan-text">ALIGN WITH PETROMIN LOGO</div>
+    <div id="scan-text">ALIGN LOGO TO INITIALIZE</div>
   </div>
 
   <!-- Interactive Game Drawer -->
   <div id="game-container">
+    
     <div class="game-header">
-      <h2>PETRO-BYPASS</h2>
+      <h2>PETRO-STREAM</h2>
       <div class="hud-metrics">
-        <div class="metric-box" id="score-text">FLOW: 0 L</div>
+        <div class="metric-box" id="score-text">DATA: 0</div>
       </div>
     </div>
 
     <div class="canvas-wrapper">
       <canvas id="gameCanvas"></canvas>
       
-      <!-- Interactive Neo D-Pad -->
+      <!-- Interactive Radial D-Pad -->
       <div id="controls-container">
         <div id="joystick-boundary">
           <div id="joystick-stick"></div>
@@ -406,29 +388,29 @@
 
       <!-- Start Overlay -->
       <div id="start-overlay" class="game-overlay">
-        <h3>SYSTEM FLOW</h3>
-        <p style="margin-top: 12px;">Use the D-PAD frame to guide the stream.<br>Pass cleanly through walls to loop back.</p>
+        <h3>PIPELINE BYPASS</h3>
+        <p style="margin-top: 10px;">Use the directional pad to route data streams.<br>Cross through outer walls safely.</p>
         
         <div class="legend-box">
           <div class="legend-item">
             <span class="legend-color" style="background:#FF9100; box-shadow: 0 0 8px #FF9100;"></span>
-            <span>Standard Drop (+10 L)</span>
+            <span>Standard Node (+10 Score)</span>
           </div>
           <div class="legend-item">
             <span class="legend-color" style="background:#00FFCC; box-shadow: 0 0 8px #00FFCC;"></span>
-            <span>Premium Overclock (Speed Boost)</span>
+            <span>Overclock Node (Velocity Up)</span>
           </div>
         </div>
 
-        <button onclick="startGame()">START INJECTION</button>
+        <button onclick="startGame()">INITIATE FLOW</button>
       </div>
 
       <!-- Game Over Overlay -->
       <div id="gameover-overlay" class="game-overlay" style="display: none;">
-        <h3 style="color: #D32F2F;">PRESSURE CORRUPTED</h3>
-        <p id="final-score-text" style="font-size: 14px; margin: 15px 0; color: #00FFCC;">Total Volume: 0 L</p>
-        <p id="game-over-reason" style="font-size: 10px; color: #6e6e82; max-width: 260px; margin-bottom: 15px;"></p>
-        <button onclick="startGame()">RESET ENGINE</button>
+        <h3 style="color: #FF5252;">STREAM INTERRUPTED</h3>
+        <p id="final-score-text" style="font-size: 16px; margin: 12px 0; color: #00FFCC; font-weight: 600;">Total Data: 0</p>
+        <p id="game-over-reason" style="font-size: 12px; color: #7f8fa4; max-width: 260px; margin-bottom: 20px;"></p>
+        <button onclick="startGame()" style="background:#FF5252; box-shadow: 0 6px 20px rgba(255, 82, 82, 0.4);">REBOOT SYSTEM</button>
       </div>
     </div>
   </div>
@@ -455,7 +437,7 @@
 
     function showRuntimeError(message) {
       errConsole.style.display = 'block';
-      errConsole.innerHTML += '<strong>[System Exception]:</strong> ' + message + '<br>';
+      errConsole.innerHTML += '<strong>[ERR]:</strong> ' + message + '<br>';
     }
 
     window.onerror = function(msg, url, line) {
@@ -483,7 +465,7 @@
     });
 
     sceneEl.addEventListener("arError", () => {
-      showRuntimeError(`Failed to trace target file context map at path: ${targetUrl}`);
+      showRuntimeError(`DB_MISSING: ${window.location.origin}${targetUrl}`);
     });
 
     targetEntity.addEventListener("targetFound", () => {
@@ -493,7 +475,7 @@
     });
 
     // ==========================================================
-    //       MODERN SMOOTH HYBRID GAME ENGINE 
+    //       MODERN ANTI-ALIASED SMOOTH GAME ENGINE
     // ==========================================================
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -503,7 +485,7 @@
     const finalScoreText = document.getElementById('final-score-text');
     const gameOverReason = document.getElementById('game-over-reason');
 
-    const gridSize = 18; 
+    const gridSize = 16; 
     let tileCountX = 0;
     let tileCountY = 0;
     let gridCellWidth = 0;
@@ -561,7 +543,7 @@
     }
 
     // ==========================================================
-    //      HIGH-SPEED MODERN SNAPPING CONTROL LOOP
+    //      HIGH-SPEED RADIAL TOUCH ENGINE
     // ==========================================================
     const joystickBoundary = document.getElementById('joystick-boundary');
     const joystickStick = document.getElementById('joystick-stick');
@@ -571,7 +553,7 @@
     let dragStartY = 0;
     let currentPointerX = 0;
     let currentPointerY = 0;
-    const maxDistance = 42; 
+    const maxDistance = 40; 
     const deadzone = 8; 
 
     function handleStart(clientX, clientY) {
@@ -591,21 +573,24 @@
 
       const deltaX = currentPointerX - dragStartX;
       const deltaY = currentPointerY - dragStartY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       
       let targetX = 0;
       let targetY = 0;
 
-      if (Math.abs(deltaX) > deadzone || Math.abs(deltaY) > deadzone) {
+      if (distance > deadzone) {
+        const angle = Math.atan2(deltaY, deltaX);
+        const limitedDist = Math.min(distance, maxDistance);
+        targetX = Math.cos(angle) * limitedDist;
+        targetY = Math.sin(angle) * limitedDist;
+
         if (Math.abs(deltaX) > Math.abs(deltaY)) {
-           targetX = deltaX > 0 ? maxDistance : -maxDistance;
-           setDirection(targetX > 0 ? 1 : -1, 0);
+           setDirection(deltaX > 0 ? 1 : -1, 0);
         } else {
-           targetY = deltaY > 0 ? maxDistance : -maxDistance;
-           setDirection(0, targetY > 0 ? 1 : -1);
+           setDirection(deltaY > 0 ? 1 : -1, 0);
         }
       }
 
-      // Smooth hardware accelerated visual shift
       joystickStick.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
       requestAnimationFrame(processJoystickPhysics);
     }
@@ -625,11 +610,10 @@
     window.addEventListener('touchend', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)'; 
+      joystickStick.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     }, { passive: true });
 
-    // Desktop Mouse Handlers
     joystickBoundary.addEventListener('mousedown', (e) => {
       handleStart(e.clientX, e.clientY);
     });
@@ -644,7 +628,7 @@
     window.addEventListener('mouseup', () => {
       if (!isDragging) return;
       isDragging = false;
-      joystickStick.style.transition = 'transform 0.15s cubic-bezier(0.25, 1, 0.5, 1)';
+      joystickStick.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
       joystickStick.style.transform = 'translate3d(0px, 0px, 0)';
     });
 
@@ -682,14 +666,14 @@
       currentSpeed = baseSpeed;
 
       pipeline = [
-        { x: 5, y: 9 },
-        { x: 4, y: 9 },
-        { x: 3, y: 9 }
+        { x: 5, y: 8 },
+        { x: 4, y: 8 },
+        { x: 3, y: 8 }
       ];
 
       spawnOilDrop();
       gameActive = true;
-      scoreText.innerText = `FLOW: 0 L`;
+      scoreText.innerText = `DATA: 0`;
       
       lastTickTime = performance.now();
       requestAnimationFrame(gameMainLoop);
@@ -727,7 +711,7 @@
       const head = { x: nextX, y: nextY };
 
       if (pipeline.some(segment => segment.x === head.x && segment.y === head.y)) {
-        triggerLeak("Loop overlap: pressure system compromised.");
+        triggerLeak("Stream intersected configuration threshold.");
         return;
       }
 
@@ -741,7 +725,7 @@
           score += 10;
           currentSpeed = Math.max(50, currentSpeed - 5);
         }
-        scoreText.innerText = `FLOW: ${score} L`;
+        scoreText.innerText = `DATA: ${score}`;
         spawnOilDrop();
       } else {
         pipeline.pop();
@@ -750,18 +734,19 @@
 
     function triggerLeak(reason) {
       gameActive = false;
-      finalScoreText.innerText = `Total Volume: ${score} L`;
+      finalScoreText.innerText = `Total Data: ${score}`;
       gameOverReason.innerText = reason;
       gameoverOverlay.style.display = 'flex';
     }
 
-    // Refined modern layout rendering method
+    // Smooth Anti-Aliased Vector Rendering Logic
     function drawGame() {
-      ctx.fillStyle = '#020204';
+      // Clear with clean, subtly vibrant background color
+      ctx.fillStyle = '#090a0f';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Soft tech grid line traces
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)';
+      // Draw Soft Grid lines
+      ctx.strokeStyle = '#141622';
       ctx.lineWidth = 1;
       for (let i = 0; i <= tileCountX; i++) {
         ctx.beginPath();
@@ -776,72 +761,68 @@
         ctx.stroke();
       }
 
-      // Draw Smooth Rounded Nodes (Targets)
-      ctx.save();
-      const fx = oilDrop.x * gridCellWidth;
-      const fy = oilDrop.y * gridCellHeight;
-      const fOffset = 3; 
-      const rw = gridCellWidth - fOffset * 2;
-      const rh = gridCellHeight - fOffset * 2;
+      // Draw Smooth Circular Target Nodes
+      const cx = oilDrop.x * gridCellWidth + gridCellWidth / 2;
+      const cy = oilDrop.y * gridCellHeight + gridCellHeight / 2;
+      const r = (gridCellWidth / 2) - 2;
 
-      ctx.shadowBlur = 10;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, 2 * Math.PI);
       if (oilDrop.special) {
         ctx.fillStyle = '#00FFCC';
         ctx.shadowColor = '#00FFCC';
+        ctx.shadowBlur = 10;
       } else {
         ctx.fillStyle = '#FF9100';
         ctx.shadowColor = '#FF9100';
+        ctx.shadowBlur = 10;
       }
-
+      ctx.fill();
+      
+      // Soft Inner Core Glow
       ctx.beginPath();
-      ctx.roundRect(fx + fOffset, fy + fOffset, rw, rh, 5); // Smooth corner radius
+      ctx.arc(cx - r/3, cy - r/3, r/3, 0, 2 * Math.PI);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
       ctx.fill();
       ctx.restore();
 
-      // Draw Clean Rounded Pipeline Stream
+      // Draw Smooth Interconnected Stream Segments
       pipeline.forEach((segment, index) => {
-        ctx.save();
-        const sx = segment.x * gridCellWidth;
-        const sy = segment.y * gridCellHeight;
-        const sOffset = 1.5;
-        const sw = gridCellWidth - sOffset * 2;
-        const sh = gridCellHeight - sOffset * 2;
+        const sx = segment.x * gridCellWidth + gridCellWidth / 2;
+        const sy = segment.y * gridCellHeight + gridCellHeight / 2;
+        const radius = (gridCellWidth / 2) - 1;
+
+        ctx.beginPath();
+        ctx.arc(sx, sy, radius, 0, 2 * Math.PI);
 
         if (index === 0) {
-          // Head block configuration
+          // Stream Head
           ctx.fillStyle = '#D32F2F';
-          ctx.shadowBlur = 12;
-          ctx.shadowColor = '#D32F2F';
-          ctx.beginPath();
-          ctx.roundRect(sx + sOffset, sy + sOffset, sw, sh, 6);
           ctx.fill();
 
-          // Smooth targeted optical eyes
+          // Smooth Radial Eyes
           ctx.fillStyle = '#FFFFFF';
-          const eyeRad = 2;
-          ctx.beginPath();
+          const eRadius = 2.5;
+          
           if (dx === 1) { 
-            ctx.arc(sx + gridCellWidth - 6, sy + 6, eyeRad, 0, Math.PI*2);
-            ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, eyeRad, 0, Math.PI*2);
+            ctx.beginPath(); ctx.arc(sx + radius/2, sy - radius/3, eRadius, 0, 2 * Math.PI); ctx.fill();
+            ctx.beginPath(); ctx.arc(sx + radius/2, sy + radius/3, eRadius, 0, 2 * Math.PI); ctx.fill();
           } else if (dx === -1) { 
-            ctx.arc(sx + 6, sy + 6, eyeRad, 0, Math.PI*2);
-            ctx.arc(sx + 6, sy + gridCellHeight - 6, eyeRad, 0, Math.PI*2);
+            ctx.beginPath(); ctx.arc(sx - radius/2, sy - radius/3, eRadius, 0, 2 * Math.PI); ctx.fill();
+            ctx.beginPath(); ctx.arc(sx - radius/2, sy + radius/3, eRadius, 0, 2 * Math.PI); ctx.fill();
           } else if (dy === 1) { 
-            ctx.arc(sx + 6, sy + gridCellHeight - 6, eyeRad, 0, Math.PI*2);
-            ctx.arc(sx + gridCellWidth - 6, sy + gridCellHeight - 6, eyeRad, 0, Math.PI*2);
+            ctx.beginPath(); ctx.arc(sx - radius/3, sy + radius/2, eRadius, 0, 2 * Math.PI); ctx.fill();
+            ctx.beginPath(); ctx.arc(sx + radius/3, sy + radius/2, eRadius, 0, 2 * Math.PI); ctx.fill();
           } else { 
-            ctx.arc(sx + 6, sy + 6, eyeRad, 0, Math.PI*2);
-            ctx.arc(sx + gridCellWidth - 6, sy + 6, eyeRad, 0, Math.PI*2);
+            ctx.beginPath(); ctx.arc(sx - radius/3, sy - radius/2, eRadius, 0, 2 * Math.PI); ctx.fill();
+            ctx.beginPath(); ctx.arc(sx + radius/3, sy - radius/2, eRadius, 0, 2 * Math.PI); ctx.fill();
           }
-          ctx.fill();
         } else {
-          // Body traces
+          // Stream Body
           ctx.fillStyle = '#FF6D00';
-          ctx.beginPath();
-          ctx.roundRect(sx + sOffset, sy + sOffset, sw, sh, 4);
           ctx.fill();
         }
-        ctx.restore();
       });
     }
   </script>
